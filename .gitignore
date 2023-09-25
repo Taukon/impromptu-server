@@ -1,3 +1,4 @@
 public/app*
 ssl/cert.pem
 ssl/key.pem
+tsconfig.json
