@@ -309,7 +309,7 @@ export class ShareFile {
         const data: AcceptWriteFile = decodeParseData(parse.data);
         const info = this.fileReaderList[data.fileName];
 
-        console.log(`write transfer ${parse.status}`);
+        // console.log(`write transfer ${parse.status}`);
         if (info?.fileSize === data.fileSize) {
           await sendFileBuffer(writeChannel, info.fileStream, info.fileSize);
           delete this.fileReaderList[data.fileName];
@@ -327,7 +327,7 @@ export class ShareFile {
   // listen answer SDP
   private async setWriteTransfer(fileSdp: FileSDP): Promise<boolean> {
     if (fileSdp.transferId) {
-      console.log(`answer: ${JSON.stringify(fileSdp)}`);
+      // console.log(`answer: ${JSON.stringify(fileSdp)}`);
       const answerSdp = fileSdp.sdp;
       const connection = this.transferList[fileSdp.transferId];
       if (connection) {
