@@ -95,6 +95,7 @@ export class ShareApp {
     );
     this.screenChannel = this.screenConnection.createDataChannel(type, {
       ordered: false,
+      maxPacketLifeTime: 10,
     });
 
     this.screenChannel.onopen = async () => {
