@@ -33,7 +33,12 @@ export const controlEventListener = (
     (event) => {
       const pos = getPos(canvas, event);
       const motion: MotionJson = {
-        move: { x: Math.round(pos.x), y: Math.round(pos.y) },
+        move: {
+          x: Math.round(pos.x),
+          y: Math.round(pos.y),
+          cw: canvas.width,
+          ch: canvas.height,
+        },
       };
       dataChannel.send(
         createAppProtocolFromJson(JSON.stringify(motion), appStatus.control),

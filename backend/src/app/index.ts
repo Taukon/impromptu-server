@@ -9,7 +9,8 @@ import { signalingDesktop } from "../signaling/desktop";
 
 const getIpAddress = (): string | undefined => {
   const nets = networkInterfaces();
-  const net = nets["eth0"]?.find((v) => v.family == "IPv4");
+  // const net = nets["eth0"]?.find((v) => v.family == "IPv4");
+  const net = nets["enp0s8"]?.find((v) => v.family == "IPv4");
   return net != null ? net.address : undefined;
 };
 
