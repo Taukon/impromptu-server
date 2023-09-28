@@ -1,5 +1,4 @@
 import { ButtonJson, KeyJson, MotionJson, MousePos } from "./type";
-import { KeySyms } from "./x11keySym";
 import { appStatus, createAppProtocolFromJson } from "../protocol";
 
 export const controlEventListener = (
@@ -74,22 +73,52 @@ export const controlEventListener = (
     "keydown",
     (event) => {
       event.preventDefault();
-      const keySym = keyborad(event);
-      if (keySym) {
-        const key: KeyJson = { key: { keySym: keySym, down: true } };
+      // const keySym = keyborad(event);
+      // if (keySym) {
+      //   const key: KeyJson = { key: { keySym: keySym, down: true } };
+      //   dataChannel.send(
+      //     createAppProtocolFromJson(JSON.stringify(key), appStatus.control),
+      //   );
+      //   if (keySym === 0xff2a || keySym === 0xff28 || keySym === 0xff29) {
+      //     dataChannel.send(
+      //       createAppProtocolFromJson(
+      //         JSON.stringify({ key: { keySym: keySym, down: false } }),
+      //         appStatus.control,
+      //       ),
+      //     );
+      //   }
+      // }
+      const keyJson = createKeyJson(event, true);
+      if (keyJson) {
         dataChannel.send(
-          createAppProtocolFromJson(JSON.stringify(key), appStatus.control),
+          createAppProtocolFromJson(JSON.stringify(keyJson), appStatus.control),
         );
-        if (keySym === 0xff2a || keySym === 0xff28 || keySym === 0xff29) {
+        if (
+          event.key === "Hankaku" ||
+          event.key === "Zenkaku" ||
+          event.key === "Hiragana"
+        ) {
+          keyJson.key.down = false;
           dataChannel.send(
             createAppProtocolFromJson(
-              JSON.stringify({ key: { keySym: keySym, down: false } }),
+              JSON.stringify(keyJson),
               appStatus.control,
             ),
           );
         }
       }
-      //console.log("keycode down: " + event.key + ' shift:' + event.shiftKey + ' ctrl:' + event.ctrlKey + ' ' + event.keyCode + ' ' + String.fromCharCode(event.keyCode));
+      console.log(
+        "keycode down: " +
+          event.key +
+          " shift:" +
+          event.shiftKey +
+          " ctrl:" +
+          event.ctrlKey +
+          " " +
+          event.keyCode +
+          " " +
+          String.fromCharCode(event.keyCode),
+      );
     },
     false,
   );
@@ -97,14 +126,31 @@ export const controlEventListener = (
     "keyup",
     (event) => {
       event.preventDefault();
-      const keySym = keyborad(event);
-      if (keySym) {
-        const key: KeyJson = { key: { keySym: keySym, down: false } };
+      // const keySym = keyborad(event);
+      // if (keySym) {
+      //   const key: KeyJson = { key: { keySym: keySym, down: false } };
+      //   dataChannel.send(
+      //     createAppProtocolFromJson(JSON.stringify(key), appStatus.control),
+      //   );
+      // }
+      const keyJson = createKeyJson(event, false);
+      if (keyJson) {
         dataChannel.send(
-          createAppProtocolFromJson(JSON.stringify(key), appStatus.control),
+          createAppProtocolFromJson(JSON.stringify(keyJson), appStatus.control),
         );
       }
-      //console.log("keycode up: " + event.key + ' shift:' + event.shiftKey + ' ctrl:' + event.ctrlKey + ' ' + event.keyCode + ' ' + String.fromCharCode(event.keyCode));
+      console.log(
+        "keycode up: " +
+          event.key +
+          " shift:" +
+          event.shiftKey +
+          " ctrl:" +
+          event.ctrlKey +
+          " " +
+          event.keyCode +
+          " " +
+          String.fromCharCode(event.keyCode),
+      );
     },
     false,
   );
@@ -136,125 +182,302 @@ const getPos = (canvas: HTMLCanvasElement, event: MouseEvent): MousePos => {
   return { x: mouseX, y: mouseY };
 };
 
-const keyborad = (msg: KeyboardEvent): number | undefined => {
+// const keyborad = (msg: KeyboardEvent): number | undefined => {
+//   if (msg.key.length == 1 && msg.key.match(/[a-z]/i)) {
+//     return msg.key.charCodeAt(0);
+//     //console.log("key: "+ msg.key.toUpperCase());
+//   } else if (msg.key.length == 1 && msg.key.match(/[0-9]/)) {
+//     //0~9
+//     const num = msg.key.match(/[0-9]/);
+//     const code = num ? (num[0] ? num[0].charCodeAt(0) : undefined) : undefined;
+//     return code;
+//     //console.log("Num: " + JSON.stringify(msg.key));
+//   } else if (msg.key.match(/^F[1-9]*/)) {
+//     //F1~9
+//     const keys = msg.key.match(/^F[1-9]*/);
+//     const keySym = keys ? KeySyms[`${keys[0]}${keys[1]}`] : undefined;
+//     return keySym;
+//     //console.log("F: "+JSON.stringify(msg.key));
+//   } else if (msg.key == "Control") {
+//     return KeySyms["Control_L"];
+//   } else if (msg.key == "Alt") {
+//     return KeySyms["Alt_L"];
+//   } else if (msg.key == "Shift") {
+//     return KeySyms["Shift_L"];
+//   } else if (msg.key == "Escape") {
+//     return KeySyms["Escape"];
+//   } else if (msg.key == "Enter") {
+//     return KeySyms["Return"];
+//   } else if (msg.key == "Backspace") {
+//     return KeySyms["BackSpace"];
+//   } else if (msg.key == "Tab") {
+//     return KeySyms["Tab"];
+//   } else if (msg.key == "Home") {
+//     return KeySyms["Home"];
+//   } else if (msg.key == "End") {
+//     return KeySyms["End"];
+//   } else if (msg.key == "PageUp") {
+//     return KeySyms["Page_Up"];
+//   } else if (msg.key == "PageDown") {
+//     return KeySyms["Page_Down"];
+//   } else if (msg.key == "ArrowRight") {
+//     return KeySyms["Right"];
+//   } else if (msg.key == "ArrowLeft") {
+//     return KeySyms["Left"];
+//   } else if (msg.key == "ArrowUp") {
+//     return KeySyms["Up"];
+//   } else if (msg.key == "ArrowDown") {
+//     return KeySyms["Down"];
+//   } else if (msg.key == "Insert") {
+//     return KeySyms["Insert"];
+//   } else if (msg.key == "Delete") {
+//     return KeySyms["Delete"];
+//   } else if (msg.key == " ") {
+//     return msg.key.charCodeAt(0);
+//   } else if (msg.key == "Alphanumeric") {
+//     return KeySyms["Caps_Lock"];
+//   } else if (msg.key == "Hankaku") {
+//     return KeySyms["Hankaku"];
+//   } else if (msg.key == "Zenkaku") {
+//     return KeySyms["Zenkaku"];
+//   } else if (msg.key == "NonConvert") {
+//     return KeySyms["Muhenkan"];
+//   } else if (msg.key == "Convert") {
+//     return KeySyms["Henkan"];
+//   } else if (msg.key == "Hiragana") {
+//     return KeySyms["Hiragana_Katakana"];
+//   } else if (msg.key == "[" || msg.keyCode == 219) {
+//     return msg.key.charCodeAt(0);
+//   } else if (msg.key == "]" || msg.keyCode == 221) {
+//     return msg.key.charCodeAt(0);
+//   } else if (msg.key == "-") {
+//     return msg.key.charCodeAt(0);
+//   } else if (msg.key == "," || msg.keyCode == 188) {
+//     return msg.key.charCodeAt(0);
+//   } else if (msg.key == "." || msg.keyCode == 190) {
+//     return msg.key.charCodeAt(0);
+//   }
+//   //
+//   else if (msg.key == "/" || msg.keyCode == 191) {
+//     return msg.key.charCodeAt(0);
+//   } else if (msg.key == "\\" || msg.keyCode == 220) {
+//     return msg.key.charCodeAt(0);
+//   } else if (msg.key == "+") {
+//     return msg.key.charCodeAt(0);
+//   } else if (msg.key == "_") {
+//     return msg.key.charCodeAt(0);
+//   } else if (msg.key == "=") {
+//     return msg.key.charCodeAt(0);
+//   } else if (msg.key == ":") {
+//     return msg.key.charCodeAt(0);
+//   } else if (msg.key == '"') {
+//     return msg.key.charCodeAt(0);
+//   } else if (msg.key == "`") {
+//     return msg.key.charCodeAt(0);
+//   } else if (msg.key == "~") {
+//     return msg.key.charCodeAt(0);
+//   }
+//   // --- Shift + 0~9
+//   else if (msg.key == "!") {
+//     return msg.key.charCodeAt(0);
+//   } else if (msg.key == "@") {
+//     return msg.key.charCodeAt(0);
+//   } else if (msg.key == "#") {
+//     return msg.key.charCodeAt(0);
+//   } else if (msg.key == "$") {
+//     return msg.key.charCodeAt(0);
+//   } else if (msg.key == "%") {
+//     return msg.key.charCodeAt(0);
+//   } else if (msg.key == "^") {
+//     return msg.key.charCodeAt(0);
+//   } else if (msg.key == "&") {
+//     return msg.key.charCodeAt(0);
+//   } else if (msg.key == "*") {
+//     return msg.key.charCodeAt(0);
+//   } else if (msg.key == "(") {
+//     return msg.key.charCodeAt(0);
+//   } else if (msg.key == ")") {
+//     return msg.key.charCodeAt(0);
+//   } else if (msg.key.length == 1) {
+//     const keySym = msg.key.charCodeAt(0);
+//     return !Number.isNaN(keySym) ? keySym : undefined;
+//   }
+
+//   //console.log(JSON.stringify(keydata));
+//   return undefined;
+// };
+
+// TODO not use keyCode
+const createKeyJson = (
+  msg: KeyboardEvent,
+  down: boolean,
+): KeyJson | undefined => {
   if (msg.key.length == 1 && msg.key.match(/[a-z]/i)) {
-    return msg.key.charCodeAt(0);
+    return { key: { keySym: msg.key.charCodeAt(0), down: down } };
     //console.log("key: "+ msg.key.toUpperCase());
   } else if (msg.key.length == 1 && msg.key.match(/[0-9]/)) {
     //0~9
     const num = msg.key.match(/[0-9]/);
     const code = num ? (num[0] ? num[0].charCodeAt(0) : undefined) : undefined;
-    return code;
-    //console.log("Num: " + JSON.stringify(msg.key));
+    //console.log("Num: " + JSON.stringify(msg.key));be-e0
+    return code ? { key: { keySym: code, down: down } } : undefined;
   } else if (msg.key.match(/^F[1-9]*/)) {
-    //F1~9
-    const keys = msg.key.match(/^F[1-9]*/);
-    const keySym = keys ? KeySyms[`${keys[0]}${keys[1]}`] : undefined;
-    return keySym;
-    //console.log("F: "+JSON.stringify(msg.key));
+    return { key: { name: msg.key, keySym: msg.keyCode, down: down } };
   } else if (msg.key == "Control") {
-    return KeySyms["Control_L"];
+    return { key: { name: msg.key, keySym: msg.keyCode, down: down } };
   } else if (msg.key == "Alt") {
-    return KeySyms["Alt_L"];
+    return { key: { name: msg.key, keySym: msg.keyCode, down: down } };
   } else if (msg.key == "Shift") {
-    return KeySyms["Shift_L"];
+    return { key: { name: msg.key, keySym: msg.keyCode, down: down } };
   } else if (msg.key == "Escape") {
-    return KeySyms["Escape"];
+    return { key: { name: msg.key, keySym: msg.keyCode, down: down } };
   } else if (msg.key == "Enter") {
-    return KeySyms["Return"];
+    return { key: { name: msg.key, keySym: msg.keyCode, down: down } };
   } else if (msg.key == "Backspace") {
-    return KeySyms["BackSpace"];
+    return { key: { name: msg.key, keySym: msg.keyCode, down: down } };
   } else if (msg.key == "Tab") {
-    return KeySyms["Tab"];
+    return { key: { name: msg.key, keySym: msg.keyCode, down: down } };
   } else if (msg.key == "Home") {
-    return KeySyms["Home"];
+    return { key: { name: msg.key, keySym: msg.keyCode, down: down } };
   } else if (msg.key == "End") {
-    return KeySyms["End"];
+    return { key: { name: msg.key, keySym: msg.keyCode, down: down } };
   } else if (msg.key == "PageUp") {
-    return KeySyms["Page_Up"];
+    return { key: { name: msg.key, keySym: msg.keyCode, down: down } };
   } else if (msg.key == "PageDown") {
-    return KeySyms["Page_Down"];
+    return { key: { name: msg.key, keySym: msg.keyCode, down: down } };
   } else if (msg.key == "ArrowRight") {
-    return KeySyms["Right"];
+    return { key: { name: msg.key, keySym: msg.keyCode, down: down } };
   } else if (msg.key == "ArrowLeft") {
-    return KeySyms["Left"];
+    return { key: { name: msg.key, keySym: msg.keyCode, down: down } };
   } else if (msg.key == "ArrowUp") {
-    return KeySyms["Up"];
+    return { key: { name: msg.key, keySym: msg.keyCode, down: down } };
   } else if (msg.key == "ArrowDown") {
-    return KeySyms["Down"];
+    return { key: { name: msg.key, keySym: msg.keyCode, down: down } };
   } else if (msg.key == "Insert") {
-    return KeySyms["Insert"];
+    return { key: { name: msg.key, keySym: msg.keyCode, down: down } };
   } else if (msg.key == "Delete") {
-    return KeySyms["Delete"];
+    return { key: { name: msg.key, keySym: msg.keyCode, down: down } };
   } else if (msg.key == " ") {
-    return msg.key.charCodeAt(0);
+    return {
+      key: { name: msg.key, keySym: msg.key.charCodeAt(0), down: down },
+    };
   } else if (msg.key == "Alphanumeric") {
-    return KeySyms["Caps_Lock"];
+    return { key: { name: msg.key, keySym: msg.keyCode, down: down } };
   } else if (msg.key == "Hankaku") {
-    return KeySyms["Hankaku"];
+    return { key: { name: msg.key, keySym: msg.keyCode, down: down } };
   } else if (msg.key == "Zenkaku") {
-    return KeySyms["Zenkaku"];
+    return { key: { name: msg.key, keySym: msg.keyCode, down: down } };
   } else if (msg.key == "NonConvert") {
-    return KeySyms["Muhenkan"];
+    return { key: { name: msg.key, keySym: msg.keyCode, down: down } };
   } else if (msg.key == "Convert") {
-    return KeySyms["Henkan"];
+    return { key: { name: msg.key, keySym: msg.keyCode, down: down } };
   } else if (msg.key == "Hiragana") {
-    return KeySyms["Hiragana_Katakana"];
+    return { key: { name: msg.key, keySym: msg.keyCode, down: down } };
   } else if (msg.key == "[" || msg.keyCode == 219) {
-    return msg.key.charCodeAt(0);
+    return {
+      key: { name: msg.key, keySym: msg.key.charCodeAt(0), down: down },
+    };
   } else if (msg.key == "]" || msg.keyCode == 221) {
-    return msg.key.charCodeAt(0);
+    return {
+      key: { name: msg.key, keySym: msg.key.charCodeAt(0), down: down },
+    };
   } else if (msg.key == "-") {
-    return msg.key.charCodeAt(0);
+    return {
+      key: { name: msg.key, keySym: msg.key.charCodeAt(0), down: down },
+    };
   } else if (msg.key == "," || msg.keyCode == 188) {
-    return msg.key.charCodeAt(0);
+    return {
+      key: { name: msg.key, keySym: msg.key.charCodeAt(0), down: down },
+    };
   } else if (msg.key == "." || msg.keyCode == 190) {
-    return msg.key.charCodeAt(0);
+    return {
+      key: { name: msg.key, keySym: msg.key.charCodeAt(0), down: down },
+    };
   }
   //
   else if (msg.key == "/" || msg.keyCode == 191) {
-    return msg.key.charCodeAt(0);
+    return {
+      key: { name: msg.key, keySym: msg.key.charCodeAt(0), down: down },
+    };
   } else if (msg.key == "\\" || msg.keyCode == 220) {
-    return msg.key.charCodeAt(0);
+    return {
+      key: { name: msg.key, keySym: msg.key.charCodeAt(0), down: down },
+    };
   } else if (msg.key == "+") {
-    return msg.key.charCodeAt(0);
+    return {
+      key: { name: msg.key, keySym: msg.key.charCodeAt(0), down: down },
+    };
   } else if (msg.key == "_") {
-    return msg.key.charCodeAt(0);
+    return {
+      key: { name: msg.key, keySym: msg.key.charCodeAt(0), down: down },
+    };
   } else if (msg.key == "=") {
-    return msg.key.charCodeAt(0);
+    return {
+      key: { name: msg.key, keySym: msg.key.charCodeAt(0), down: down },
+    };
   } else if (msg.key == ":") {
-    return msg.key.charCodeAt(0);
+    return {
+      key: { name: msg.key, keySym: msg.key.charCodeAt(0), down: down },
+    };
   } else if (msg.key == '"') {
-    return msg.key.charCodeAt(0);
+    return {
+      key: { name: msg.key, keySym: msg.key.charCodeAt(0), down: down },
+    };
   } else if (msg.key == "`") {
-    return msg.key.charCodeAt(0);
+    return {
+      key: { name: msg.key, keySym: msg.key.charCodeAt(0), down: down },
+    };
   } else if (msg.key == "~") {
-    return msg.key.charCodeAt(0);
+    return {
+      key: { name: msg.key, keySym: msg.key.charCodeAt(0), down: down },
+    };
   }
   // --- Shift + 0~9
   else if (msg.key == "!") {
-    return msg.key.charCodeAt(0);
+    return {
+      key: { name: msg.key, keySym: msg.key.charCodeAt(0), down: down },
+    };
   } else if (msg.key == "@") {
-    return msg.key.charCodeAt(0);
+    return {
+      key: { name: msg.key, keySym: msg.key.charCodeAt(0), down: down },
+    };
   } else if (msg.key == "#") {
-    return msg.key.charCodeAt(0);
+    return {
+      key: { name: msg.key, keySym: msg.key.charCodeAt(0), down: down },
+    };
   } else if (msg.key == "$") {
-    return msg.key.charCodeAt(0);
+    return {
+      key: { name: msg.key, keySym: msg.key.charCodeAt(0), down: down },
+    };
   } else if (msg.key == "%") {
-    return msg.key.charCodeAt(0);
+    return {
+      key: { name: msg.key, keySym: msg.key.charCodeAt(0), down: down },
+    };
   } else if (msg.key == "^") {
-    return msg.key.charCodeAt(0);
+    return {
+      key: { name: msg.key, keySym: msg.key.charCodeAt(0), down: down },
+    };
   } else if (msg.key == "&") {
-    return msg.key.charCodeAt(0);
+    return {
+      key: { name: msg.key, keySym: msg.key.charCodeAt(0), down: down },
+    };
   } else if (msg.key == "*") {
-    return msg.key.charCodeAt(0);
+    return {
+      key: { name: msg.key, keySym: msg.key.charCodeAt(0), down: down },
+    };
   } else if (msg.key == "(") {
-    return msg.key.charCodeAt(0);
+    return {
+      key: { name: msg.key, keySym: msg.key.charCodeAt(0), down: down },
+    };
   } else if (msg.key == ")") {
-    return msg.key.charCodeAt(0);
+    return {
+      key: { name: msg.key, keySym: msg.key.charCodeAt(0), down: down },
+    };
   } else if (msg.key.length == 1) {
     const keySym = msg.key.charCodeAt(0);
-    return !Number.isNaN(keySym) ? keySym : undefined;
+    return !Number.isNaN(keySym)
+      ? { key: { name: msg.key, keySym: keySym, down: down } }
+      : undefined;
   }
 
   //console.log(JSON.stringify(keydata));
