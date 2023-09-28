@@ -75,14 +75,14 @@ export const controlEventListener = (
       event.preventDefault();
       // const keySym = keyborad(event);
       // if (keySym) {
-      //   const key: KeyJson = { key: { keySym: keySym, down: true } };
+      //   const key: KeyJson = { key: { keyCode: keySym, down: true } };
       //   dataChannel.send(
       //     createAppProtocolFromJson(JSON.stringify(key), appStatus.control),
       //   );
       //   if (keySym === 0xff2a || keySym === 0xff28 || keySym === 0xff29) {
       //     dataChannel.send(
       //       createAppProtocolFromJson(
-      //         JSON.stringify({ key: { keySym: keySym, down: false } }),
+      //         JSON.stringify({ key: { keyCode: keySym, down: false } }),
       //         appStatus.control,
       //       ),
       //     );
@@ -128,7 +128,7 @@ export const controlEventListener = (
       event.preventDefault();
       // const keySym = keyborad(event);
       // if (keySym) {
-      //   const key: KeyJson = { key: { keySym: keySym, down: false } };
+      //   const key: KeyJson = { key: { keyCode: keySym, down: false } };
       //   dataChannel.send(
       //     createAppProtocolFromJson(JSON.stringify(key), appStatus.control),
       //   );
@@ -313,170 +313,311 @@ const createKeyJson = (
   down: boolean,
 ): KeyJson | undefined => {
   if (msg.key.length == 1 && msg.key.match(/[a-z]/i)) {
-    return { key: { keySym: msg.key.charCodeAt(0), down: down } };
+    // return { key: { keyCode: msg.key.charCodeAt(0), down: down } };
+    return {
+      key: {
+        charCode: msg.key.charCodeAt(0),
+        keyCode: msg.keyCode,
+        down: down,
+      },
+    };
     //console.log("key: "+ msg.key.toUpperCase());
   } else if (msg.key.length == 1 && msg.key.match(/[0-9]/)) {
     //0~9
     const num = msg.key.match(/[0-9]/);
     const code = num ? (num[0] ? num[0].charCodeAt(0) : undefined) : undefined;
     //console.log("Num: " + JSON.stringify(msg.key));be-e0
-    return code ? { key: { keySym: code, down: down } } : undefined;
+    return code ? { key: { keyCode: code, down: down } } : undefined;
   } else if (msg.key.match(/^F[1-9]*/)) {
-    return { key: { name: msg.key, keySym: msg.keyCode, down: down } };
+    return {
+      key: {
+        name: msg.key,
+        charCode: msg.key.charCodeAt(0),
+        keyCode: msg.keyCode,
+        down: down,
+      },
+    };
   } else if (msg.key == "Control") {
-    return { key: { name: msg.key, keySym: msg.keyCode, down: down } };
+    return { key: { name: msg.key, keyCode: msg.keyCode, down: down } };
   } else if (msg.key == "Alt") {
-    return { key: { name: msg.key, keySym: msg.keyCode, down: down } };
+    return { key: { name: msg.key, keyCode: msg.keyCode, down: down } };
   } else if (msg.key == "Shift") {
-    return { key: { name: msg.key, keySym: msg.keyCode, down: down } };
+    return { key: { name: msg.key, keyCode: msg.keyCode, down: down } };
   } else if (msg.key == "Escape") {
-    return { key: { name: msg.key, keySym: msg.keyCode, down: down } };
+    return { key: { name: msg.key, keyCode: msg.keyCode, down: down } };
   } else if (msg.key == "Enter") {
-    return { key: { name: msg.key, keySym: msg.keyCode, down: down } };
+    return { key: { name: msg.key, keyCode: msg.keyCode, down: down } };
   } else if (msg.key == "Backspace") {
-    return { key: { name: msg.key, keySym: msg.keyCode, down: down } };
+    return { key: { name: msg.key, keyCode: msg.keyCode, down: down } };
   } else if (msg.key == "Tab") {
-    return { key: { name: msg.key, keySym: msg.keyCode, down: down } };
+    return { key: { name: msg.key, keyCode: msg.keyCode, down: down } };
   } else if (msg.key == "Home") {
-    return { key: { name: msg.key, keySym: msg.keyCode, down: down } };
+    return { key: { name: msg.key, keyCode: msg.keyCode, down: down } };
   } else if (msg.key == "End") {
-    return { key: { name: msg.key, keySym: msg.keyCode, down: down } };
+    return { key: { name: msg.key, keyCode: msg.keyCode, down: down } };
   } else if (msg.key == "PageUp") {
-    return { key: { name: msg.key, keySym: msg.keyCode, down: down } };
+    return { key: { name: msg.key, keyCode: msg.keyCode, down: down } };
   } else if (msg.key == "PageDown") {
-    return { key: { name: msg.key, keySym: msg.keyCode, down: down } };
+    return { key: { name: msg.key, keyCode: msg.keyCode, down: down } };
   } else if (msg.key == "ArrowRight") {
-    return { key: { name: msg.key, keySym: msg.keyCode, down: down } };
+    return { key: { name: msg.key, keyCode: msg.keyCode, down: down } };
   } else if (msg.key == "ArrowLeft") {
-    return { key: { name: msg.key, keySym: msg.keyCode, down: down } };
+    return { key: { name: msg.key, keyCode: msg.keyCode, down: down } };
   } else if (msg.key == "ArrowUp") {
-    return { key: { name: msg.key, keySym: msg.keyCode, down: down } };
+    return { key: { name: msg.key, keyCode: msg.keyCode, down: down } };
   } else if (msg.key == "ArrowDown") {
-    return { key: { name: msg.key, keySym: msg.keyCode, down: down } };
+    return { key: { name: msg.key, keyCode: msg.keyCode, down: down } };
   } else if (msg.key == "Insert") {
-    return { key: { name: msg.key, keySym: msg.keyCode, down: down } };
+    return { key: { name: msg.key, keyCode: msg.keyCode, down: down } };
   } else if (msg.key == "Delete") {
-    return { key: { name: msg.key, keySym: msg.keyCode, down: down } };
+    return { key: { name: msg.key, keyCode: msg.keyCode, down: down } };
   } else if (msg.key == " ") {
     return {
-      key: { name: msg.key, keySym: msg.key.charCodeAt(0), down: down },
+      key: { name: msg.key, keyCode: msg.key.charCodeAt(0), down: down },
     };
   } else if (msg.key == "Alphanumeric") {
-    return { key: { name: msg.key, keySym: msg.keyCode, down: down } };
+    return { key: { name: msg.key, keyCode: msg.keyCode, down: down } };
   } else if (msg.key == "Hankaku") {
-    return { key: { name: msg.key, keySym: msg.keyCode, down: down } };
+    return { key: { name: msg.key, keyCode: msg.keyCode, down: down } };
   } else if (msg.key == "Zenkaku") {
-    return { key: { name: msg.key, keySym: msg.keyCode, down: down } };
+    return { key: { name: msg.key, keyCode: msg.keyCode, down: down } };
   } else if (msg.key == "NonConvert") {
-    return { key: { name: msg.key, keySym: msg.keyCode, down: down } };
+    return { key: { name: msg.key, keyCode: msg.keyCode, down: down } };
   } else if (msg.key == "Convert") {
-    return { key: { name: msg.key, keySym: msg.keyCode, down: down } };
+    return { key: { name: msg.key, keyCode: msg.keyCode, down: down } };
   } else if (msg.key == "Hiragana") {
-    return { key: { name: msg.key, keySym: msg.keyCode, down: down } };
+    return { key: { name: msg.key, keyCode: msg.keyCode, down: down } };
   } else if (msg.key == "[" || msg.keyCode == 219) {
     return {
-      key: { name: msg.key, keySym: msg.key.charCodeAt(0), down: down },
+      key: {
+        name: msg.key,
+        charCode: msg.key.charCodeAt(0),
+        keyCode: 219,
+        down: down,
+      },
     };
   } else if (msg.key == "]" || msg.keyCode == 221) {
     return {
-      key: { name: msg.key, keySym: msg.key.charCodeAt(0), down: down },
-    };
-  } else if (msg.key == "-") {
-    return {
-      key: { name: msg.key, keySym: msg.key.charCodeAt(0), down: down },
+      key: {
+        name: msg.key,
+        charCode: msg.key.charCodeAt(0),
+        keyCode: 221,
+        down: down,
+      },
     };
   } else if (msg.key == "," || msg.keyCode == 188) {
     return {
-      key: { name: msg.key, keySym: msg.key.charCodeAt(0), down: down },
+      key: {
+        name: msg.key,
+        charCode: msg.key.charCodeAt(0),
+        keyCode: 188,
+        down: down,
+      },
+    };
+  } else if (msg.key == "-") {
+    return {
+      key: {
+        name: msg.key,
+        charCode: msg.key.charCodeAt(0),
+        keyCode: 189,
+        down: down,
+      },
     };
   } else if (msg.key == "." || msg.keyCode == 190) {
     return {
-      key: { name: msg.key, keySym: msg.key.charCodeAt(0), down: down },
+      key: {
+        name: msg.key,
+        charCode: msg.key.charCodeAt(0),
+        keyCode: 190,
+        down: down,
+      },
     };
   }
   //
   else if (msg.key == "/" || msg.keyCode == 191) {
     return {
-      key: { name: msg.key, keySym: msg.key.charCodeAt(0), down: down },
+      key: {
+        name: msg.key,
+        charCode: msg.key.charCodeAt(0),
+        keyCode: 191,
+        down: down,
+      },
     };
   } else if (msg.key == "\\" || msg.keyCode == 220) {
     return {
-      key: { name: msg.key, keySym: msg.key.charCodeAt(0), down: down },
+      key: {
+        name: msg.key,
+        charCode: msg.key.charCodeAt(0),
+        keyCode: 220,
+        down: down,
+      },
     };
   } else if (msg.key == "+") {
     return {
-      key: { name: msg.key, keySym: msg.key.charCodeAt(0), down: down },
+      key: {
+        name: msg.key,
+        charCode: msg.key.charCodeAt(0),
+        keyCode: msg.keyCode,
+        down: down,
+      },
     };
   } else if (msg.key == "_") {
     return {
-      key: { name: msg.key, keySym: msg.key.charCodeAt(0), down: down },
+      key: {
+        name: msg.key,
+        charCode: msg.key.charCodeAt(0),
+        keyCode: msg.keyCode,
+        down: down,
+      },
     };
   } else if (msg.key == "=") {
     return {
-      key: { name: msg.key, keySym: msg.key.charCodeAt(0), down: down },
+      key: {
+        name: msg.key,
+        charCode: msg.key.charCodeAt(0),
+        keyCode: msg.keyCode,
+        down: down,
+      },
     };
   } else if (msg.key == ":") {
     return {
-      key: { name: msg.key, keySym: msg.key.charCodeAt(0), down: down },
+      key: {
+        name: msg.key,
+        charCode: msg.key.charCodeAt(0),
+        keyCode: msg.keyCode,
+        down: down,
+      },
     };
   } else if (msg.key == '"') {
     return {
-      key: { name: msg.key, keySym: msg.key.charCodeAt(0), down: down },
+      key: {
+        name: msg.key,
+        charCode: msg.key.charCodeAt(0),
+        keyCode: msg.keyCode,
+        down: down,
+      },
     };
   } else if (msg.key == "`") {
     return {
-      key: { name: msg.key, keySym: msg.key.charCodeAt(0), down: down },
+      key: {
+        name: msg.key,
+        charCode: msg.key.charCodeAt(0),
+        keyCode: msg.keyCode,
+        down: down,
+      },
     };
   } else if (msg.key == "~") {
     return {
-      key: { name: msg.key, keySym: msg.key.charCodeAt(0), down: down },
+      key: {
+        name: msg.key,
+        charCode: msg.key.charCodeAt(0),
+        keyCode: msg.keyCode,
+        down: down,
+      },
     };
   }
   // --- Shift + 0~9
   else if (msg.key == "!") {
     return {
-      key: { name: msg.key, keySym: msg.key.charCodeAt(0), down: down },
+      key: {
+        name: msg.key,
+        charCode: msg.key.charCodeAt(0),
+        keyCode: msg.keyCode,
+        down: down,
+      },
     };
   } else if (msg.key == "@") {
     return {
-      key: { name: msg.key, keySym: msg.key.charCodeAt(0), down: down },
+      key: {
+        name: msg.key,
+        charCode: msg.key.charCodeAt(0),
+        keyCode: msg.keyCode,
+        down: down,
+      },
     };
   } else if (msg.key == "#") {
     return {
-      key: { name: msg.key, keySym: msg.key.charCodeAt(0), down: down },
+      key: {
+        name: msg.key,
+        charCode: msg.key.charCodeAt(0),
+        keyCode: msg.keyCode,
+        down: down,
+      },
     };
   } else if (msg.key == "$") {
     return {
-      key: { name: msg.key, keySym: msg.key.charCodeAt(0), down: down },
+      key: {
+        name: msg.key,
+        charCode: msg.key.charCodeAt(0),
+        keyCode: msg.keyCode,
+        down: down,
+      },
     };
   } else if (msg.key == "%") {
     return {
-      key: { name: msg.key, keySym: msg.key.charCodeAt(0), down: down },
+      key: {
+        name: msg.key,
+        charCode: msg.key.charCodeAt(0),
+        keyCode: msg.keyCode,
+        down: down,
+      },
     };
   } else if (msg.key == "^") {
     return {
-      key: { name: msg.key, keySym: msg.key.charCodeAt(0), down: down },
+      key: {
+        name: msg.key,
+        charCode: msg.key.charCodeAt(0),
+        keyCode: msg.keyCode,
+        down: down,
+      },
     };
   } else if (msg.key == "&") {
     return {
-      key: { name: msg.key, keySym: msg.key.charCodeAt(0), down: down },
+      key: {
+        name: msg.key,
+        charCode: msg.key.charCodeAt(0),
+        keyCode: msg.keyCode,
+        down: down,
+      },
     };
   } else if (msg.key == "*") {
     return {
-      key: { name: msg.key, keySym: msg.key.charCodeAt(0), down: down },
+      key: {
+        name: msg.key,
+        charCode: msg.key.charCodeAt(0),
+        keyCode: msg.keyCode,
+        down: down,
+      },
     };
   } else if (msg.key == "(") {
     return {
-      key: { name: msg.key, keySym: msg.key.charCodeAt(0), down: down },
+      key: {
+        name: msg.key,
+        charCode: msg.key.charCodeAt(0),
+        keyCode: msg.keyCode,
+        down: down,
+      },
     };
   } else if (msg.key == ")") {
     return {
-      key: { name: msg.key, keySym: msg.key.charCodeAt(0), down: down },
+      key: {
+        name: msg.key,
+        charCode: msg.key.charCodeAt(0),
+        keyCode: msg.keyCode,
+        down: down,
+      },
     };
   } else if (msg.key.length == 1) {
-    const keySym = msg.key.charCodeAt(0);
-    return !Number.isNaN(keySym)
-      ? { key: { name: msg.key, keySym: keySym, down: down } }
+    const charCode = msg.key.charCodeAt(0);
+    return !Number.isNaN(charCode)
+      ? {
+          key: {
+            name: msg.key,
+            charCode: charCode,
+            keyCode: msg.keyCode,
+            down: down,
+          },
+        }
       : undefined;
   }
 
