@@ -218,6 +218,8 @@ const createKeyJson = (
     return {
       key: { name: msg.key, keyCode: msg.key.charCodeAt(0), down: down },
     };
+  } else if (msg.key == "CapsLock") {
+    return { key: { name: msg.key, keyCode: msg.keyCode, down: down } };
   } else if (msg.key == "Alphanumeric") {
     return { key: { name: msg.key, keyCode: msg.keyCode, down: down } };
   } else if (msg.key == "Hankaku") {
