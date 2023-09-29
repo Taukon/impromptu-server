@@ -93,19 +93,19 @@ export const controlEventListener = (
         dataChannel.send(
           createAppProtocolFromJson(JSON.stringify(keyJson), appStatus.control),
         );
-        if (
-          event.key === "Hankaku" ||
-          event.key === "Zenkaku" ||
-          event.key === "Hiragana"
-        ) {
-          keyJson.key.down = false;
-          dataChannel.send(
-            createAppProtocolFromJson(
-              JSON.stringify(keyJson),
-              appStatus.control,
-            ),
-          );
-        }
+      //   if (
+      //     event.key === "Hankaku" ||
+      //     event.key === "Zenkaku" ||
+      //     event.key === "Hiragana"
+      //   ) {
+      //     keyJson.key.down = false;
+      //     dataChannel.send(
+      //       createAppProtocolFromJson(
+      //         JSON.stringify(keyJson),
+      //         appStatus.control,
+      //       ),
+      //     );
+      //   }
       }
       console.log(
         "keycode down: " +
