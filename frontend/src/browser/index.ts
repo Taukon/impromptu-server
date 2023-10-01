@@ -3,6 +3,7 @@ import { ShareApp } from "./shareApp";
 import { Access, AppSDP, FileSDP } from "./signaling/type";
 import {
   listenAppAnswerSDP,
+  listenAppOfferSDP,
   listenFileAnswerSDP,
   listenFileOfferSDP,
   reqAuth,
@@ -67,11 +68,18 @@ export const listenOfferSDP = (
   socket: Socket,
   browserWebRTC: BrowserWebRTC[],
 ): void => {
+  const appListener = async (desktopId: string, appSdp: AppSDP) => {
+    browserWebRTC.forEach(async (v) => {
+      if (v.shareApp.desktopId === desktopId)
+        await v.shareApp.listenOfferScreen(socket, v.access, appSdp);
+    });
+  };
   const fileListener = async (desktopId: string, fileSdp: FileSDP) => {
     browserWebRTC.forEach((v) => {
       if (v.shareFile.desktopId === desktopId)
         v.shareFile.listenOfferTransfer(socket, v.access, fileSdp);
     });
   };
+  listenAppOfferSDP(socket, appListener);
   listenFileOfferSDP(socket, fileListener);
 };

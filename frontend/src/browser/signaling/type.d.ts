@@ -13,6 +13,8 @@ export type Access = {
 export type AppSDP = {
   type: string;
   sdp: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  appData?: any;
 };
 
 export type FileSDP = {
