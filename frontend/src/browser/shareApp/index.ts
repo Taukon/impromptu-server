@@ -162,10 +162,6 @@ export class ShareApp {
       }
     };
 
-    // this.screenConnection.onconnectionstatechange = () => {
-    //   console.log(`screen: ${this.screenConnection?.connectionState} | ${this.screenChannel?.readyState}`)
-    // };
-
     await setLocalOffer(this.screenChannelConnection);
 
     return;
@@ -174,7 +170,6 @@ export class ShareApp {
   private async reqScreenTrack(socket: Socket, access: Access): Promise<void> {
     const type = `screen`;
     const offerSDP = (sdp: string) => {
-      console.log(`send track screen sdp`);
       sendAppOfferSDP(socket, access, { type, sdp, appData: `track` });
     };
 
@@ -198,7 +193,7 @@ export class ShareApp {
         this.video.onloadedmetadata = () => this.video.play();
 
         const loop = () => {
-          // console.log(`canvas vide: ${this.video.videoWidth} ${this.video.videoHeight}`);
+          // console.log(`canvas video: ${this.video.videoWidth} ${this.video.videoHeight}`);
           this.canvas.width = this.video.videoWidth;
           this.canvas.height = this.video.videoHeight;
           this.canvas.getContext("2d")?.drawImage(this.video, 0, 0);
@@ -246,10 +241,6 @@ export class ShareApp {
       if (this.controlChannel)
         controlEventListener(this.canvas, this.controlChannel);
     };
-
-    // this.controlConnection.onconnectionstatechange = () => {
-    //   console.log(`control: ${this.controlConnection?.connectionState} | ${this.controlChannel?.readyState}`)
-    // };
 
     await setLocalOffer(this.controlConnection);
 
