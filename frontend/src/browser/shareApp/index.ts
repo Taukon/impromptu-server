@@ -1,7 +1,6 @@
 import { Socket } from "socket.io-client";
 import { sendAppOfferSDP } from "../signaling";
-import { Access } from "../signaling/type";
-// import { reflectScreen } from "../shareApp/connect";
+import { Access, AppSDP } from "../signaling/type";
 import { controlEventListener } from "../canvas";
 import {
   createPeerConnection,
@@ -20,8 +19,9 @@ import {
 import { timer } from "../util";
 
 export class ShareApp {
-  private screenChannel?: RTCDataChannel;
-  private screenConnection?: RTCPeerConnection;
+  // private screenChannel?: RTCDataChannel;
+  private screenChannelConnection?: RTCPeerConnection;
+  private screenTrackConnection?: RTCPeerConnection;
 
   private controlChannel?: RTCDataChannel;
   private controlConnection?: RTCPeerConnection;
@@ -32,8 +32,9 @@ export class ShareApp {
   public desktopId: string;
 
   public canvas: HTMLCanvasElement;
+  public video: HTMLVideoElement;
   public image: HTMLImageElement;
-  public audio?: HTMLAudioElement;
+  public audio: HTMLAudioElement;
 
   // screen
   private preId = 0;
@@ -47,6 +48,9 @@ export class ShareApp {
     this.canvas = document.createElement("canvas");
     this.canvas.setAttribute("tabindex", String(0));
 
+    this.video = document.createElement("video");
+    this.audio = document.createElement("audio");
+
     this.image = new Image();
     this.image.onload = () => {
       this.canvas.width = this.image.width;
@@ -56,50 +60,50 @@ export class ShareApp {
   }
 
   public isChannelOpen(): boolean {
-    return (
-      this.screenChannel?.readyState === "open" &&
-      this.controlChannel?.readyState === "open"
-    );
+    return this.controlChannel?.readyState === "open";
   }
 
   public closeShareApp() {
-    this.screenConnection?.close();
-    this.screenChannel?.close();
+    this.screenChannelConnection?.close();
+    this.screenTrackConnection?.close();
+
     this.controlConnection?.close();
     this.controlChannel?.close();
   }
 
   // send Offer SDP
   public async reqShareApp(socket: Socket, access: Access): Promise<void> {
-    await this.reqScreen(socket, access);
+    await this.reqScreenTrack(socket, access);
+    await this.reqScreenChannel(socket, access);
     await this.reqControl(socket, access);
   }
 
   // listen Answer SDP
-  public async setShareApp(type: string, answerSdp: string): Promise<void> {
-    if (type === `screen`) {
-      await this.setScreen(answerSdp);
-    } else if (type === `control`) {
-      await this.setControl(answerSdp);
+  public async setShareApp(appSdp: AppSDP): Promise<void> {
+    console.log(`answer sdp ${appSdp.type} : ${appSdp.appData}`);
+    if (appSdp.type === `screen`) {
+      await this.setScreen(appSdp);
+    } else if (appSdp.type === `control`) {
+      await this.setControl(appSdp.sdp);
     }
   }
 
-  private async reqScreen(socket: Socket, access: Access): Promise<void> {
+  public async reqScreenChannel(socket: Socket, access: Access): Promise<void> {
     const type = `screen`;
     const offerSDP = (sdp: string) =>
-      sendAppOfferSDP(socket, access, { type, sdp });
+      sendAppOfferSDP(socket, access, { type, sdp, appData: `channel` });
 
-    this.screenConnection = createPeerConnection(
+    this.screenChannelConnection = createPeerConnection(
       offerSDP,
       peerConnectionConfig,
     );
-    this.screenChannel = this.screenConnection.createDataChannel(type, {
+    const screenChannel = this.screenChannelConnection.createDataChannel(type, {
       ordered: false,
       maxRetransmits: 0,
     });
 
-    this.screenChannel.onopen = async () => {
-      if (this.screenChannel?.readyState === "open") {
+    screenChannel.onopen = async () => {
+      if (screenChannel.readyState === "open") {
         while (this.hasScreen === false) {
           const id = getRandomInt(appMaxId);
           const data = createAppProtocol(
@@ -108,13 +112,13 @@ export class ShareApp {
             appStatus.start,
             0,
           );
-          this.screenChannel.send(data);
+          if (screenChannel.readyState === "open") screenChannel.send(data);
           await timer(2 * 1000);
         }
       }
     };
 
-    this.screenChannel.onmessage = (event) => {
+    screenChannel.onmessage = (event) => {
       if (!this.hasScreen) this.hasScreen = true;
       const buf = event.data;
       const parse = parseAppProtocol(new Uint8Array(buf));
@@ -162,20 +166,67 @@ export class ShareApp {
     //   console.log(`screen: ${this.screenConnection?.connectionState} | ${this.screenChannel?.readyState}`)
     // };
 
-    await setLocalOffer(this.screenConnection);
+    await setLocalOffer(this.screenChannelConnection);
+
+    return;
+  }
+
+  private async reqScreenTrack(socket: Socket, access: Access): Promise<void> {
+    const type = `screen`;
+    const offerSDP = (sdp: string) => {
+      console.log(`send track screen sdp`);
+      sendAppOfferSDP(socket, access, { type, sdp, appData: `track` });
+    };
+
+    this.screenTrackConnection = createPeerConnection(
+      offerSDP,
+      peerConnectionConfig,
+    );
+
+    this.screenTrackConnection.addTransceiver("video", {
+      direction: "recvonly",
+    });
+    this.screenTrackConnection.addTransceiver("audio", {
+      direction: "recvonly",
+    });
+
+    this.screenTrackConnection.ontrack = (event) => {
+      // console.log(`ontrack: ${event.track.kind}`);
+      if (event.track.kind === "video" && event.streams[0]) {
+        // this.video.srcObject = new MediaStream([event.track]);
+        this.video.srcObject = event.streams[0];
+        this.video.onloadedmetadata = () => this.video.play();
+
+        const loop = () => {
+          // console.log(`canvas vide: ${this.video.videoWidth} ${this.video.videoHeight}`);
+          this.canvas.width = this.video.videoWidth;
+          this.canvas.height = this.video.videoHeight;
+          this.canvas.getContext("2d")?.drawImage(this.video, 0, 0);
+          requestAnimationFrame(loop);
+        };
+        requestAnimationFrame(loop);
+      } else if (event.track.kind === "audio" && event.streams[0]) {
+        // this.audio.srcObject = new MediaStream([event.track]);
+        this.audio.srcObject = event.streams[0];
+        this.audio.play();
+      }
+    };
+
+    await setLocalOffer(this.screenTrackConnection);
 
     return;
   }
 
   // listen Answer SDP
-  private async setScreen(
-    answerSdp: string,
-  ): Promise<RTCDataChannel | undefined> {
-    if (this.screenChannel && this.screenConnection) {
-      await setRemoteAnswer(answerSdp, this.screenConnection);
-      return this.screenChannel;
+  private async setScreen(appSdp: AppSDP): Promise<boolean> {
+    if (this.screenChannelConnection && appSdp.appData === `channel`) {
+      await setRemoteAnswer(appSdp.sdp, this.screenChannelConnection);
+      return true;
+    } else if (this.screenTrackConnection && appSdp.appData === `track`) {
+      await setRemoteAnswer(appSdp.sdp, this.screenTrackConnection);
+      return true;
     }
-    return undefined;
+    return false;
   }
 
   private async reqControl(socket: Socket, access: Access): Promise<void> {

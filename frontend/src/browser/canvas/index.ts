@@ -9,9 +9,10 @@ export const controlEventListener = (
     "mousedown",
     () => {
       const button: ButtonJson = { button: { buttonMask: 0x1, down: true } };
-      dataChannel.send(
-        createAppProtocolFromJson(JSON.stringify(button), appStatus.control),
-      );
+      if (dataChannel.bufferedAmount == 0)
+        dataChannel.send(
+          createAppProtocolFromJson(JSON.stringify(button), appStatus.control),
+        );
       //console.log("mousedown: " + JSON.stringify(event));
     },
     false,
@@ -20,9 +21,10 @@ export const controlEventListener = (
     "mouseup",
     () => {
       const button: ButtonJson = { button: { buttonMask: 0x1, down: false } };
-      dataChannel.send(
-        createAppProtocolFromJson(JSON.stringify(button), appStatus.control),
-      );
+      if (dataChannel.bufferedAmount == 0)
+        dataChannel.send(
+          createAppProtocolFromJson(JSON.stringify(button), appStatus.control),
+        );
       //console.log("mouseup: " + JSON.stringify(event));
     },
     false,
@@ -39,9 +41,10 @@ export const controlEventListener = (
           ch: canvas.height,
         },
       };
-      dataChannel.send(
-        createAppProtocolFromJson(JSON.stringify(motion), appStatus.control),
-      );
+      if (dataChannel.bufferedAmount == 0)
+        dataChannel.send(
+          createAppProtocolFromJson(JSON.stringify(motion), appStatus.control),
+        );
       //console.log("mousemove : x=" + pos.x + ", y=" + pos.y);
     },
     false,
@@ -55,16 +58,21 @@ export const controlEventListener = (
         button: { buttonMask: 0x4, down: true },
       };
       const buttonUp: ButtonJson = { button: { buttonMask: 0x4, down: false } };
-      dataChannel.send(
-        createAppProtocolFromJson(
-          JSON.stringify(buttonDown),
-          appStatus.control,
-        ),
-      );
-      dataChannel.send(
-        createAppProtocolFromJson(JSON.stringify(buttonUp), appStatus.control),
-      );
-      //console.log(JSON.stringify(event));
+      if (dataChannel.bufferedAmount == 0) {
+        dataChannel.send(
+          createAppProtocolFromJson(
+            JSON.stringify(buttonDown),
+            appStatus.control,
+          ),
+        );
+        dataChannel.send(
+          createAppProtocolFromJson(
+            JSON.stringify(buttonUp),
+            appStatus.control,
+          ),
+        );
+        //console.log(JSON.stringify(event));
+      }
     },
     false,
   );
@@ -74,7 +82,7 @@ export const controlEventListener = (
     (event) => {
       event.preventDefault();
       const keyJson = createKeyJson(event, true);
-      if (keyJson) {
+      if (keyJson && dataChannel.bufferedAmount == 0) {
         dataChannel.send(
           createAppProtocolFromJson(JSON.stringify(keyJson), appStatus.control),
         );
@@ -107,7 +115,7 @@ export const controlEventListener = (
     (event) => {
       event.preventDefault();
       const keyJson = createKeyJson(event, false);
-      if (keyJson) {
+      if (keyJson && dataChannel.bufferedAmount == 0) {
         dataChannel.send(
           createAppProtocolFromJson(JSON.stringify(keyJson), appStatus.control),
         );
@@ -127,12 +135,12 @@ export const controlEventListener = (
     "wheel",
     (event) => {
       event.preventDefault();
-      if (event.deltaY / 100 > 0) {
+      if (event.deltaY / 100 > 0 && dataChannel.bufferedAmount == 0) {
         const button: ButtonJson = { button: { buttonMask: 0x10, down: true } };
         dataChannel.send(
           createAppProtocolFromJson(JSON.stringify(button), appStatus.control),
         );
-      } else {
+      } else if (dataChannel.bufferedAmount == 0) {
         const button: ButtonJson = { button: { buttonMask: 0x8, down: true } };
         dataChannel.send(
           createAppProtocolFromJson(JSON.stringify(button), appStatus.control),
