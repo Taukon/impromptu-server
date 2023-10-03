@@ -50,7 +50,7 @@ export const listenAnswerSDP = (
   const appListener = async (desktopId: string, appSdp: AppSDP) => {
     browserWebRTC.forEach(async (v) => {
       if (v.shareApp.desktopId === desktopId)
-        await v.shareApp.setShareApp(appSdp.type, appSdp.sdp);
+        await v.shareApp.setShareApp(appSdp);
     });
   };
   const fileListener = async (desktopId: string, fileSdp: FileSDP) => {
