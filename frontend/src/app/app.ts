@@ -4,7 +4,6 @@ import {
   initShareApp,
   initShareFile,
   listenAnswerSDP,
-  listenOfferSDP,
   reqAccess,
 } from "../browser";
 import { Access } from "../browser/signaling/type";
@@ -61,7 +60,6 @@ const setOptionForm = (socket: Socket) => {
     reqAccess(socket, inputDesktopId.value, inputPwd.value, start);
 
   listenAnswerSDP(socket, clientList);
-  listenOfferSDP(socket, clientList);
 };
 
 const start = async (socket: Socket, access: Access): Promise<void> => {

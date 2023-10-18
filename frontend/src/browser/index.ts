@@ -1,12 +1,7 @@
 import { Socket } from "socket.io-client";
 import { ShareApp } from "./shareApp";
 import { Access, AppSDP, FileSDP } from "./signaling/type";
-import {
-  listenAppAnswerSDP,
-  listenFileAnswerSDP,
-  listenFileOfferSDP,
-  reqAuth,
-} from "./signaling";
+import { listenAppAnswerSDP, listenFileAnswerSDP, reqAuth } from "./signaling";
 import { ShareFile } from "./shareFile";
 
 export type BrowserWebRTC = {
@@ -61,17 +56,4 @@ export const listenAnswerSDP = (
   };
   listenAppAnswerSDP(socket, appListener);
   listenFileAnswerSDP(socket, fileListener);
-};
-
-export const listenOfferSDP = (
-  socket: Socket,
-  browserWebRTC: BrowserWebRTC[],
-): void => {
-  const fileListener = async (desktopId: string, fileSdp: FileSDP) => {
-    browserWebRTC.forEach((v) => {
-      if (v.shareFile.desktopId === desktopId)
-        v.shareFile.listenOfferTransfer(socket, v.access, fileSdp);
-    });
-  };
-  listenFileOfferSDP(socket, fileListener);
 };
