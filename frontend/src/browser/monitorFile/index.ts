@@ -29,8 +29,10 @@ export const updateFiles = (
       break;
     case FileMsgType.writing:
       unlinkFiles(fileDownload, fileWatchMsg.msgItems);
+      writingFiles(fileDownload, fileWatchMsg.msgItems);
       break;
     case FileMsgType.saved:
+      unlinkFiles(fileDownload, fileWatchMsg.msgItems);
       addFiles(fileDownload, fileWatchMsg.msgItems, recvFileFunc);
       break;
     default:
@@ -49,6 +51,16 @@ const addFiles = (
     button.addEventListener("click", async () => {
       await recvFileFunc(item);
     });
+
+    fileDownload.appendChild(button);
+  }
+};
+
+const writingFiles = (fileDownload: FileDownload, msgItems: string[]) => {
+  for (const item of msgItems) {
+    const button = document.createElement("button");
+    button.textContent = button.id = button.name = item;
+    button.disabled = true;
 
     fileDownload.appendChild(button);
   }
