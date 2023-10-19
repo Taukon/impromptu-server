@@ -137,12 +137,12 @@ export class TransferFile {
         transferId,
       });
 
-    const fileWatchConnection = createPeerConnection(
+    const transferFileConnection = createPeerConnection(
       answerSDP,
       this.rtcConfigurationBrowser,
     );
 
-    fileWatchConnection.ondatachannel = (event: RTCDataChannelEvent) => {
+    transferFileConnection.ondatachannel = (event: RTCDataChannelEvent) => {
       event.channel.onopen = () => {
         if (
           this.transferFileConnections[transferId]?.connectionState ===
@@ -175,6 +175,6 @@ export class TransferFile {
       };
     };
 
-    await setRemoteOffer(sdp, fileWatchConnection);
+    await setRemoteOffer(sdp, transferFileConnection);
   }
 }
