@@ -58,6 +58,14 @@ export const sendFileBuffer = async (
   fileStream: ReadableStream<Uint8Array>,
   fileSize: number,
 ): Promise<void> => {
+  const send = async (data: Uint8Array) => {
+    // eslint-disable-next-line no-constant-condition
+    while (1) {
+      if (channel.bufferedAmount == 0) break;
+      await timer(loop);
+    }
+    channel.send(data);
+  };
   const reader = fileStream.getReader();
   const id = getRandomInt(appMaxId);
   const chunkSize = appMax - appHeader;
@@ -83,7 +91,7 @@ export const sendFileBuffer = async (
               appStatus.start,
               order,
             );
-            channel.send(appData);
+            await send(appData);
           } else if (total < fileSize) {
             const appData = createAppProtocol(
               sliceBuf,
@@ -91,7 +99,7 @@ export const sendFileBuffer = async (
               appStatus.middle,
               order,
             );
-            channel.send(appData);
+            await send(appData);
           } else {
             const appData = createAppProtocol(
               sliceBuf,
@@ -99,7 +107,7 @@ export const sendFileBuffer = async (
               appStatus.end,
               order,
             );
-            channel.send(appData);
+            await send(appData);
           }
 
           sliceOffset += sliceBuf.byteLength;
@@ -113,23 +121,23 @@ export const sendFileBuffer = async (
         // once
         if (fileSize === total && order === 0) {
           const appData = createAppProtocol(value, id, appStatus.start, order);
-          channel.send(appData);
+          await send(appData);
           const appDataTmp = createAppProtocol(
             new Uint8Array(0),
             id,
             appStatus.end,
             order + 1,
           );
-          channel.send(appDataTmp);
+          await send(appDataTmp);
         } else if (order === 0) {
           const appData = createAppProtocol(value, id, appStatus.start, order);
-          channel.send(appData);
+          await send(appData);
         } else if (total < fileSize) {
           const appData = createAppProtocol(value, id, appStatus.middle, order);
-          channel.send(appData);
+          await send(appData);
         } else {
           const appData = createAppProtocol(value, id, appStatus.end, order);
-          channel.send(appData);
+          await send(appData);
         }
 
         order++;
