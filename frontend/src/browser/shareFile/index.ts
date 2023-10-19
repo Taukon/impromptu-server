@@ -4,7 +4,6 @@ import { FileDownload, FileUpload, FileWatchMsg } from "../monitorFile/type";
 import { removeFileList, updateFiles } from "../monitorFile";
 import { appStatus, decodeParseData, parseAppProtocol } from "../protocol";
 import { sendFileOfferSDP } from "../signaling";
-import { peerConnectionConfig } from "../config";
 import {
   createPeerConnection,
   setLocalOffer,
@@ -30,17 +29,18 @@ import streamSaver from "streamsaver";
 
 export class ShareFile {
   public desktopId: string;
-
   public fileUpload: FileUpload;
   public fileDownload: FileDownload;
 
+  private rtcConfiguration: RTCConfiguration;
   private fileWatchChannel?: RTCDataChannel;
   private fileWatchConnection?: RTCPeerConnection;
 
   private transferList: TransferList = {};
   private fileReaderList: FileReaderList = {};
 
-  constructor(desktopId: string) {
+  constructor(desktopId: string, rtcConfiguration: RTCConfiguration) {
+    this.rtcConfiguration = rtcConfiguration;
     this.desktopId = desktopId;
 
     const fileInput = document.createElement("input");
@@ -123,7 +123,7 @@ export class ShareFile {
 
     this.fileWatchConnection = createPeerConnection(
       offerSDP,
-      peerConnectionConfig,
+      this.rtcConfiguration,
     );
     this.fileWatchChannel = this.fileWatchConnection.createDataChannel(type, {
       ordered: true,
@@ -188,7 +188,10 @@ export class ShareFile {
     let fileSize: number | undefined;
     let writer: WritableStreamDefaultWriter | undefined;
 
-    const readConnection = createPeerConnection(offerSDP, peerConnectionConfig);
+    const readConnection = createPeerConnection(
+      offerSDP,
+      this.rtcConfiguration,
+    );
 
     const readChannel = readConnection.createDataChannel(type, {
       ordered: true,
@@ -282,7 +285,7 @@ export class ShareFile {
 
     const writeConnection = createPeerConnection(
       offerSDP,
-      peerConnectionConfig,
+      this.rtcConfiguration,
     );
 
     const writeChannel = writeConnection.createDataChannel(type, {

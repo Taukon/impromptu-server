@@ -1,14 +1,22 @@
 import { Server, Socket } from "socket.io";
 import { UserManage } from "../userManage";
-import { AppSDP, FileSDP } from "./type";
+import {
+  AppSDP,
+  AuthProxyInfo,
+  FileSDP,
+  ReqAuthProxyInfo,
+  ReqProxyInfo,
+} from "./type";
+import { peerConnectionConfig } from "../config";
 
 export const signalingDesktop = (
+  desktopServer: Server,
   browserServer: Server,
   socket: Socket,
   userManage: UserManage,
 ): void => {
   const desktopId = userManage.addDesktopUser(socket.id);
-  socket.emit("desktopId", desktopId);
+  socket.emit("desktopId", desktopId, peerConnectionConfig);
 
   socket.on("disconnect", () => {
     userManage.removeDesktopUser(desktopId);
@@ -23,10 +31,14 @@ export const signalingDesktop = (
         desktopId,
       );
       if (accessToken) {
-        browserServer.to(browserSocketId).emit("resAuth", {
-          desktopId: desktopId,
-          token: accessToken,
-        });
+        browserServer.to(browserSocketId).emit(
+          "resAuth",
+          {
+            desktopId: desktopId,
+            token: accessToken,
+          },
+          peerConnectionConfig,
+        );
       } else {
         browserServer.to(browserSocketId).emit("resAuth");
       }
@@ -34,6 +46,34 @@ export const signalingDesktop = (
       browserServer.to(browserSocketId).emit("resAuth");
     }
   });
+
+  socket.on("reqAutoProxy", (info: ReqAuthProxyInfo) => {
+    const proxyUser = userManage.getDesktopUser(info.proxyId);
+    if (proxyUser?.socketId) {
+      const authInfo: AuthProxyInfo = {
+        proxyId: info.proxyId,
+        password: info.proxyPassword,
+        desktopId: info.desktopId,
+      };
+      userManage.addProxyInfo(info.desktopId, info.desktopPassword);
+      desktopServer.to(proxyUser.socketId).emit("reqProxyAuth", authInfo);
+    }
+  });
+
+  socket.on(
+    "resProxyAuth",
+    async (res: { desktopId: string; status: boolean }) => {
+      const password = userManage.getDesktopUser(res.desktopId)
+        ?.passwordForProxy;
+      if (res.status && password) {
+        const proxyInfo: ReqProxyInfo = {
+          desktopId: res.desktopId,
+          password: password,
+        };
+        socket.emit("reqProxy", proxyInfo);
+      }
+    },
+  );
 
   // App
 

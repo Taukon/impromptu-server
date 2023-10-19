@@ -9,6 +9,7 @@ module.exports = {
 
   entry: {
     app: path.join(__dirname, 'src', 'app', 'app.ts'),
+    proxy: path.join(__dirname, 'src', 'app', 'proxy.ts'),
   },
 
   output: {

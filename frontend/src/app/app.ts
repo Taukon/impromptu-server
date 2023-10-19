@@ -62,11 +62,15 @@ const setOptionForm = (socket: Socket) => {
   listenAnswerSDP(socket, clientList);
 };
 
-const start = async (socket: Socket, access: Access): Promise<void> => {
+const start = async (
+  socket: Socket,
+  access: Access,
+  rtcConfiguration: RTCConfiguration,
+): Promise<void> => {
   const client: BrowserWebRTC = {
     access: access,
-    shareApp: initShareApp(access.desktopId),
-    shareFile: initShareFile(access.desktopId),
+    shareApp: initShareApp(access.desktopId, rtcConfiguration),
+    shareFile: initShareFile(access.desktopId, rtcConfiguration),
   };
 
   const desktopList = document.getElementById("desktopList");

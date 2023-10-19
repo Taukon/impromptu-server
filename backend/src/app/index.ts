@@ -67,7 +67,7 @@ const start = async () => {
 
   desktopServer.on("connection", (sock) => {
     console.log(`desktopId: ${sock.id}`);
-    signalingDesktop(clientServer, sock, userTable);
+    signalingDesktop(desktopServer, clientServer, sock, userTable);
   });
 };
 

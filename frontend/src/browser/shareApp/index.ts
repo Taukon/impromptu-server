@@ -6,8 +6,7 @@ import {
   createPeerConnection,
   setLocalOffer,
   setRemoteAnswer,
-} from "../peerConection";
-import { peerConnectionConfig } from "../config";
+} from "../peerConnection";
 import {
   appMaxId,
   appStatus,
@@ -19,15 +18,12 @@ import {
 import { timer } from "../util";
 
 export class ShareApp {
-  // private screenChannel?: RTCDataChannel;
+  private rtcConfiguration: RTCConfiguration;
   private screenChannelConnection?: RTCPeerConnection;
   private screenTrackConnection?: RTCPeerConnection;
 
   private controlChannel?: RTCDataChannel;
   private controlConnection?: RTCPeerConnection;
-
-  // public audioStream?: RTCDataChannel;
-  // private audioConection?: RTCPeerConnection;
 
   public desktopId: string;
 
@@ -42,7 +38,8 @@ export class ShareApp {
   private tmp = new Uint8Array(0);
   private hasScreen = false;
 
-  constructor(desktopId: string) {
+  constructor(desktopId: string, rtcConfiguration: RTCConfiguration) {
+    this.rtcConfiguration = rtcConfiguration;
     this.desktopId = desktopId;
 
     this.canvas = document.createElement("canvas");
@@ -95,7 +92,7 @@ export class ShareApp {
 
     this.screenChannelConnection = createPeerConnection(
       offerSDP,
-      peerConnectionConfig,
+      this.rtcConfiguration,
     );
     const screenChannel = this.screenChannelConnection.createDataChannel(type, {
       ordered: false,
@@ -175,7 +172,7 @@ export class ShareApp {
 
     this.screenTrackConnection = createPeerConnection(
       offerSDP,
-      peerConnectionConfig,
+      this.rtcConfiguration,
     );
 
     this.screenTrackConnection.addTransceiver("video", {
@@ -231,7 +228,7 @@ export class ShareApp {
 
     this.controlConnection = createPeerConnection(
       offerSDP,
-      peerConnectionConfig,
+      this.rtcConfiguration,
     );
     this.controlChannel = this.controlConnection.createDataChannel(type, {
       ordered: true,
