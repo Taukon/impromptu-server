@@ -37,7 +37,7 @@ const setManualOptionForm = (parentNode: HTMLDivElement) => {
   (<HTMLDivElement>document.getElementById("autoProxy"))?.remove();
   const optionForm = document.createElement("p");
   optionForm.id = "manualProxy";
-  optionForm.textContent = `Manual Mode`;
+  optionForm.textContent = `Manual Mode| `;
   parentNode.appendChild(optionForm);
 
   optionForm.appendChild(document.createTextNode("Original Desktop ID: "));
@@ -83,7 +83,7 @@ const setAutoOptionForm = (parentNode: HTMLDivElement) => {
   (<HTMLDivElement>document.getElementById("autoProxy"))?.remove();
   const optionForm = document.createElement("p");
   optionForm.id = "autoProxy";
-  optionForm.textContent = `Auto Mode`;
+  optionForm.textContent = `Auto Mode| `;
   parentNode.appendChild(optionForm);
 
   optionForm.appendChild(
