@@ -135,7 +135,10 @@ export class ControlApp {
       };
 
       event.channel.onmessage = (event) => {
-        if (controlDesktopChannel.readyState === "open")
+        if (
+          controlDesktopChannel.readyState === "open" &&
+          controlDesktopChannel.bufferedAmount === 0
+        )
           controlDesktopChannel.send(event.data);
       };
     };
