@@ -191,8 +191,13 @@ export class ShareApp {
 
         const loop = () => {
           // console.log(`canvas video: ${this.video.videoWidth} ${this.video.videoHeight}`);
-          this.canvas.width = this.video.videoWidth;
-          this.canvas.height = this.video.videoHeight;
+          if (
+            this.canvas.width < this.video.videoWidth &&
+            this.canvas.height < this.video.videoHeight
+          ) {
+            this.canvas.width = this.video.videoWidth;
+            this.canvas.height = this.video.videoHeight;
+          }
           this.canvas.getContext("2d")?.drawImage(this.video, 0, 0);
           requestAnimationFrame(loop);
         };
