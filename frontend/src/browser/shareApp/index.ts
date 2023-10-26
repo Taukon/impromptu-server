@@ -31,6 +31,8 @@ export class ShareApp {
   public video: HTMLVideoElement;
   public image: HTMLImageElement;
   public audio: HTMLAudioElement;
+  private screenWidth: number = 0;
+  private screenHeight: number = 0;
 
   // screen
   private preId = 0;
@@ -190,12 +192,14 @@ export class ShareApp {
 
         const loop = () => {
           if (
-            this.canvas.width < this.video.videoWidth &&
-            this.canvas.height < this.video.videoHeight
+            this.screenWidth < this.video.videoWidth &&
+            this.screenHeight < this.video.videoHeight
           ) {
             console.log(
               `canvas video: ${this.video.videoWidth} ${this.video.videoHeight}`,
             );
+            this.screenWidth = this.video.videoWidth;
+            this.screenHeight = this.video.videoHeight;
             this.canvas.style.width = `${this.video.videoWidth}px`;
             this.canvas.style.height = `${this.video.videoHeight}px`;
           }
