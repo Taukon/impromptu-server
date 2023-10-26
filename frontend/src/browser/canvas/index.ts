@@ -1,7 +1,9 @@
 import { ButtonJson, KeyJson, MotionJson, MousePos } from "./type";
 import { appStatus, createAppProtocolFromJson } from "../protocol";
+import { ShareApp } from "../shareApp";
 
 export const controlEventListener = (
+  shareApp: ShareApp,
   canvas: HTMLCanvasElement,
   dataChannel: RTCDataChannel,
 ): void => {
@@ -51,8 +53,8 @@ export const controlEventListener = (
         move: {
           x: Math.round(pos.x),
           y: Math.round(pos.y),
-          cw: canvas.width,
-          ch: canvas.height,
+          cw: shareApp.screenWidth,
+          ch: shareApp.screenHeight,
         },
       };
       if (dataChannel.bufferedAmount == 0)

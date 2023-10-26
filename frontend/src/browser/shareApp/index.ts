@@ -31,8 +31,8 @@ export class ShareApp {
   public video: HTMLVideoElement;
   public image: HTMLImageElement;
   public audio: HTMLAudioElement;
-  private screenWidth: number = 0;
-  private screenHeight: number = 0;
+  public screenWidth: number = 0;
+  public screenHeight: number = 0;
 
   // screen
   private preId = 0;
@@ -250,7 +250,7 @@ export class ShareApp {
 
     this.controlChannel.onopen = () => {
       if (this.controlChannel)
-        controlEventListener(this.canvas, this.controlChannel);
+        controlEventListener(this, this.canvas, this.controlChannel);
     };
 
     await setLocalOffer(this.controlConnection);
