@@ -1,31 +1,47 @@
 import { ButtonJson, KeyJson, MotionJson, MousePos } from "./type";
 import { appStatus, createAppProtocolFromJson } from "../protocol";
+import { ShareApp } from "../shareApp";
 
 export const controlEventListener = (
+  shareApp: ShareApp,
   canvas: HTMLCanvasElement,
   dataChannel: RTCDataChannel,
 ): void => {
   canvas.addEventListener(
     "mousedown",
-    () => {
+    (event) => {
       const button: ButtonJson = { button: { buttonMask: 0x1, down: true } };
+      if (event.button === 1) {
+        // middle click
+        button.button.buttonMask = 0x2;
+      } else if (event.button === 2) {
+        // left click
+        button.button.buttonMask = 0x4;
+      }
       if (dataChannel.bufferedAmount == 0)
         dataChannel.send(
           createAppProtocolFromJson(JSON.stringify(button), appStatus.control),
         );
-      //console.log("mousedown: " + JSON.stringify(event));
+      // console.log("mousedown: " + JSON.stringify(event.button));
     },
     false,
   );
   canvas.addEventListener(
     "mouseup",
-    () => {
+    (event) => {
       const button: ButtonJson = { button: { buttonMask: 0x1, down: false } };
+      if (event.button === 1) {
+        // middle click
+        button.button.buttonMask = 0x2;
+      } else if (event.button === 2) {
+        // left click
+        button.button.buttonMask = 0x4;
+      }
       if (dataChannel.bufferedAmount == 0)
         dataChannel.send(
           createAppProtocolFromJson(JSON.stringify(button), appStatus.control),
         );
-      //console.log("mouseup: " + JSON.stringify(event));
+      // console.log("mouseup: " + JSON.stringify(event.button));
     },
     false,
   );
@@ -37,8 +53,8 @@ export const controlEventListener = (
         move: {
           x: Math.round(pos.x),
           y: Math.round(pos.y),
-          cw: canvas.width,
-          ch: canvas.height,
+          cw: shareApp.screenWidth,
+          ch: shareApp.screenHeight,
         },
       };
       if (dataChannel.bufferedAmount == 0)

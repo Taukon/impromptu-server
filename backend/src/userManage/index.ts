@@ -18,6 +18,16 @@ export class UserManage {
     return desktopId;
   }
 
+  public addProxyInfo(desktopId: string, passwordForProxy: string): boolean {
+    const desktopUser = this.desktopUser[desktopId];
+    if (desktopUser) {
+      desktopUser.passwordForProxy = passwordForProxy;
+      this.desktopUser[desktopId] = desktopUser;
+      return true;
+    }
+    return false;
+  }
+
   public getDesktopUser(desktopId: string): DesktopUser | undefined {
     const desktopUser = this.desktopUser[desktopId];
     return desktopUser;

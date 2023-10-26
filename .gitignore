@@ -1,4 +1,5 @@
 public/app*
+public/proxy*
 ssl/cert.pem
 ssl/key.pem
 tsconfig.json

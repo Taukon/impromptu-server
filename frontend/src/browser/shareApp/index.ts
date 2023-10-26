@@ -6,8 +6,7 @@ import {
   createPeerConnection,
   setLocalOffer,
   setRemoteAnswer,
-} from "../peerConection";
-import { peerConnectionConfig } from "../config";
+} from "../peerConnection";
 import {
   appMaxId,
   appStatus,
@@ -19,15 +18,12 @@ import {
 import { timer } from "../util";
 
 export class ShareApp {
-  // private screenChannel?: RTCDataChannel;
+  private rtcConfiguration: RTCConfiguration;
   private screenChannelConnection?: RTCPeerConnection;
   private screenTrackConnection?: RTCPeerConnection;
 
   private controlChannel?: RTCDataChannel;
   private controlConnection?: RTCPeerConnection;
-
-  // public audioStream?: RTCDataChannel;
-  // private audioConection?: RTCPeerConnection;
 
   public desktopId: string;
 
@@ -35,6 +31,8 @@ export class ShareApp {
   public video: HTMLVideoElement;
   public image: HTMLImageElement;
   public audio: HTMLAudioElement;
+  public screenWidth: number = 0;
+  public screenHeight: number = 0;
 
   // screen
   private preId = 0;
@@ -42,7 +40,8 @@ export class ShareApp {
   private tmp = new Uint8Array(0);
   private hasScreen = false;
 
-  constructor(desktopId: string) {
+  constructor(desktopId: string, rtcConfiguration: RTCConfiguration) {
+    this.rtcConfiguration = rtcConfiguration;
     this.desktopId = desktopId;
 
     this.canvas = document.createElement("canvas");
@@ -95,7 +94,7 @@ export class ShareApp {
 
     this.screenChannelConnection = createPeerConnection(
       offerSDP,
-      peerConnectionConfig,
+      this.rtcConfiguration,
     );
     const screenChannel = this.screenChannelConnection.createDataChannel(type, {
       ordered: false,
@@ -175,7 +174,7 @@ export class ShareApp {
 
     this.screenTrackConnection = createPeerConnection(
       offerSDP,
-      peerConnectionConfig,
+      this.rtcConfiguration,
     );
 
     this.screenTrackConnection.addTransceiver("video", {
@@ -186,16 +185,28 @@ export class ShareApp {
     });
 
     this.screenTrackConnection.ontrack = (event) => {
-      // console.log(`ontrack: ${event.track.kind}`);
       if (event.track.kind === "video" && event.streams[0]) {
         // this.video.srcObject = new MediaStream([event.track]);
         this.video.srcObject = event.streams[0];
         this.video.onloadedmetadata = () => this.video.play();
 
         const loop = () => {
-          // console.log(`canvas video: ${this.video.videoWidth} ${this.video.videoHeight}`);
+          if (
+            this.screenWidth < this.video.videoWidth &&
+            this.screenHeight < this.video.videoHeight
+          ) {
+            console.log(
+              `canvas video: ${this.video.videoWidth} ${this.video.videoHeight}`,
+            );
+            this.screenWidth = this.video.videoWidth;
+            this.screenHeight = this.video.videoHeight;
+            this.canvas.style.width = `${this.video.videoWidth}px`;
+            this.canvas.style.height = `${this.video.videoHeight}px`;
+          }
+
           this.canvas.width = this.video.videoWidth;
           this.canvas.height = this.video.videoHeight;
+
           this.canvas.getContext("2d")?.drawImage(this.video, 0, 0);
           requestAnimationFrame(loop);
         };
@@ -231,7 +242,7 @@ export class ShareApp {
 
     this.controlConnection = createPeerConnection(
       offerSDP,
-      peerConnectionConfig,
+      this.rtcConfiguration,
     );
     this.controlChannel = this.controlConnection.createDataChannel(type, {
       ordered: true,
@@ -239,7 +250,7 @@ export class ShareApp {
 
     this.controlChannel.onopen = () => {
       if (this.controlChannel)
-        controlEventListener(this.canvas, this.controlChannel);
+        controlEventListener(this, this.canvas, this.controlChannel);
     };
 
     await setLocalOffer(this.controlConnection);

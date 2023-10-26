@@ -4,7 +4,6 @@ import {
   initShareApp,
   initShareFile,
   listenAnswerSDP,
-  listenOfferSDP,
   reqAccess,
 } from "../browser";
 import { Access } from "../browser/signaling/type";
@@ -61,14 +60,17 @@ const setOptionForm = (socket: Socket) => {
     reqAccess(socket, inputDesktopId.value, inputPwd.value, start);
 
   listenAnswerSDP(socket, clientList);
-  listenOfferSDP(socket, clientList);
 };
 
-const start = async (socket: Socket, access: Access): Promise<void> => {
+const start = async (
+  socket: Socket,
+  access: Access,
+  rtcConfiguration: RTCConfiguration,
+): Promise<void> => {
   const client: BrowserWebRTC = {
     access: access,
-    shareApp: initShareApp(access.desktopId),
-    shareFile: initShareFile(access.desktopId),
+    shareApp: initShareApp(access.desktopId, rtcConfiguration),
+    shareFile: initShareFile(access.desktopId, rtcConfiguration),
   };
 
   const desktopList = document.getElementById("desktopList");

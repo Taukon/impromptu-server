@@ -1,6 +1,7 @@
 export type DesktopId = string;
 export type DesktopUser = {
   socketId: string;
+  passwordForProxy?: string;
 };
 
 export type DesktopUserList = {

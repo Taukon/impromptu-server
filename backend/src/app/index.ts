@@ -35,19 +35,28 @@ const options = {
 
 // --- WebSocket Server For Client ---
 const httpsServerForClient = https.createServer(options, app);
+
+const clientServer = new Server(httpsServerForClient, {
+  cors: { origin: "*" },
+});
+
 httpsServerForClient.listen(clientPort, () => {
   console.log(`https://${ip_addr}:${clientPort}/impromptu.html`);
+  console.log(`https://${ip_addr}:${clientPort}/impromptu-proxy.html`);
 });
-const clientServer = new Server(httpsServerForClient);
 
 // --- WebSocket Server For Desktop ---
 const httpsServerForDesktop = https.createServer(options, app);
+
+const desktopServer = new Server(httpsServerForDesktop, {
+  cors: { origin: "*" },
+});
+
 httpsServerForDesktop.listen(desktopPort, () => {
   console.log(
     "https://" + ip_addr + ":" + desktopPort + "  <-- desktop server",
   );
 });
-const desktopServer = new Server(httpsServerForDesktop);
 
 const start = async () => {
   const userTable = new UserManage();
@@ -58,7 +67,7 @@ const start = async () => {
 
   desktopServer.on("connection", (sock) => {
     console.log(`desktopId: ${sock.id}`);
-    signalingDesktop(clientServer, sock, userTable);
+    signalingDesktop(desktopServer, clientServer, sock, userTable);
   });
 };
 

@@ -1,12 +1,7 @@
 import { Socket } from "socket.io-client";
 import { ShareApp } from "./shareApp";
 import { Access, AppSDP, FileSDP } from "./signaling/type";
-import {
-  listenAppAnswerSDP,
-  listenFileAnswerSDP,
-  listenFileOfferSDP,
-  reqAuth,
-} from "./signaling";
+import { listenAppAnswerSDP, listenFileAnswerSDP, reqAuth } from "./signaling";
 import { ShareFile } from "./shareFile";
 
 export type BrowserWebRTC = {
@@ -15,32 +10,46 @@ export type BrowserWebRTC = {
   shareFile: ShareFile;
 };
 
-export const initShareApp = (desktopId: string): ShareApp => {
-  return new ShareApp(desktopId);
+export const initShareApp = (
+  desktopId: string,
+  rtcConfiguration: RTCConfiguration,
+): ShareApp => {
+  return new ShareApp(desktopId, rtcConfiguration);
 };
 
-export const initShareFile = (desktopId: string): ShareFile => {
-  return new ShareFile(desktopId);
+export const initShareFile = (
+  desktopId: string,
+  rtcConfiguration: RTCConfiguration,
+): ShareFile => {
+  return new ShareFile(desktopId, rtcConfiguration);
 };
 
 export const reqAccess = (
   socket: Socket,
   desktopId: string,
   password: string,
-  init: (socket: Socket, access: Access) => void,
+  init: (
+    socket: Socket,
+    access: Access,
+    rtcConfiguration: RTCConfiguration,
+  ) => void,
 ) => {
   reqAuth(socket, { desktopId, password });
 
-  socket.once("resAuth", async (info: Access | undefined) => {
-    console.log(info);
-    if (info) {
-      const access: Access = {
-        desktopId: info.desktopId,
-        token: info.token,
-      };
-      init(socket, access);
-    }
-  });
+  socket.once(
+    "resAuth",
+    async (info: Access | undefined, rtcConfiguration?: RTCConfiguration) => {
+      console.log(info);
+      console.log(rtcConfiguration);
+      if (info && rtcConfiguration) {
+        const access: Access = {
+          desktopId: info.desktopId,
+          token: info.token,
+        };
+        init(socket, access, rtcConfiguration);
+      }
+    },
+  );
 };
 
 export const listenAnswerSDP = (
@@ -61,17 +70,4 @@ export const listenAnswerSDP = (
   };
   listenAppAnswerSDP(socket, appListener);
   listenFileAnswerSDP(socket, fileListener);
-};
-
-export const listenOfferSDP = (
-  socket: Socket,
-  browserWebRTC: BrowserWebRTC[],
-): void => {
-  const fileListener = async (desktopId: string, fileSdp: FileSDP) => {
-    browserWebRTC.forEach((v) => {
-      if (v.shareFile.desktopId === desktopId)
-        v.shareFile.listenOfferTransfer(socket, v.access, fileSdp);
-    });
-  };
-  listenFileOfferSDP(socket, fileListener);
 };
