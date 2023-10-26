@@ -7,25 +7,39 @@ export const controlEventListener = (
 ): void => {
   canvas.addEventListener(
     "mousedown",
-    () => {
+    (event) => {
       const button: ButtonJson = { button: { buttonMask: 0x1, down: true } };
+      if (event.button === 1) {
+        // middle click
+        button.button.buttonMask = 0x2;
+      } else if (event.button === 2) {
+        // left click
+        button.button.buttonMask = 0x4;
+      }
       if (dataChannel.bufferedAmount == 0)
         dataChannel.send(
           createAppProtocolFromJson(JSON.stringify(button), appStatus.control),
         );
-      //console.log("mousedown: " + JSON.stringify(event));
+      // console.log("mousedown: " + JSON.stringify(event.button));
     },
     false,
   );
   canvas.addEventListener(
     "mouseup",
-    () => {
+    (event) => {
       const button: ButtonJson = { button: { buttonMask: 0x1, down: false } };
+      if (event.button === 1) {
+        // middle click
+        button.button.buttonMask = 0x2;
+      } else if (event.button === 2) {
+        // left click
+        button.button.buttonMask = 0x4;
+      }
       if (dataChannel.bufferedAmount == 0)
         dataChannel.send(
           createAppProtocolFromJson(JSON.stringify(button), appStatus.control),
         );
-      //console.log("mouseup: " + JSON.stringify(event));
+      // console.log("mouseup: " + JSON.stringify(event.button));
     },
     false,
   );
