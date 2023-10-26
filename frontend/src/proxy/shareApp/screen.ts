@@ -24,10 +24,10 @@ export class ScreenApp {
   private toDesktopSocket: Socket;
   private toBrowserSocket: Socket;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  public video: any = document.createElement("video");
+  private videoStream?: MediaStream;
   private videoTrack?: MediaStreamTrack;
-  private audioStream?: MediaStream;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  public audio: any = document.createElement("audio");
   private audioTrack?: MediaStreamTrack;
 
   constructor(
@@ -155,14 +155,18 @@ export class ScreenApp {
     });
 
     this.screenTrackConnection.ontrack = (event) => {
-      // console.log(`ontrack: ${event.track.kind}`);
+      console.log(
+        `ontrack: ${event.track.kind} ${JSON.stringify(
+          event.track.getSettings(),
+        )}`,
+      );
       if (event.track.kind === "video" && event.streams[0]) {
         this.videoTrack = event.track;
-        this.video.srcObject = event.streams[0];
-        this.video.onloadedmetadata = () => this.video.play();
+        this.videoStream = event.streams[0];
       } else if (event.track.kind === "audio" && event.streams[0]) {
         this.audioTrack = event.track;
-        this.audioStream = event.streams[0];
+        this.audio.srcObject = event.streams[0];
+        this.audio.play();
       }
     };
 
@@ -269,13 +273,13 @@ export class ScreenApp {
       this.rtcConfigurationBrowser,
     );
 
-    if (this.videoTrack && this.video.captureStream) {
-      const stream = this.video.captureStream();
-      screenConnection.addTrack(this.videoTrack, stream);
+    if (this.videoTrack && this.videoStream) {
+      screenConnection.addTrack(this.videoTrack, this.videoStream);
     }
 
-    if (this.audioTrack && this.audioStream) {
-      screenConnection.addTrack(this.audioTrack, this.audioStream);
+    if (this.audioTrack && this.audio.captureStream) {
+      const stream = this.audio.captureStream();
+      screenConnection.addTrack(this.audioTrack, stream);
     }
 
     this.screenBrowserTracks[browserId]?.close();
@@ -284,18 +288,13 @@ export class ScreenApp {
     screenConnection.onconnectionstatechange = () => {
       switch (screenConnection.connectionState) {
         case "connected":
-          if (!this.videoTrack && !(this.audioTrack && this.audioStream)) {
+          if (!this.videoTrack && !this.audioTrack) {
             screenConnection.close();
           }
           break;
         case "disconnected":
         case "failed":
         case "closed":
-          if (this.videoTrack) {
-            this.videoTrack.stop();
-            this.video.pause();
-            this.video.srcObject.removeTrack(this.videoTrack);
-          }
           screenConnection.close();
           delete this.screenBrowserTracks[browserId];
           break;

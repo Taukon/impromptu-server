@@ -183,21 +183,26 @@ export class ShareApp {
     });
 
     this.screenTrackConnection.ontrack = (event) => {
-      // console.log(`ontrack: ${event.track.kind}`);
       if (event.track.kind === "video" && event.streams[0]) {
         // this.video.srcObject = new MediaStream([event.track]);
         this.video.srcObject = event.streams[0];
         this.video.onloadedmetadata = () => this.video.play();
 
         const loop = () => {
-          // console.log(`canvas video: ${this.video.videoWidth} ${this.video.videoHeight}`);
           if (
             this.canvas.width < this.video.videoWidth &&
             this.canvas.height < this.video.videoHeight
           ) {
-            this.canvas.width = this.video.videoWidth;
-            this.canvas.height = this.video.videoHeight;
+            console.log(
+              `canvas video: ${this.video.videoWidth} ${this.video.videoHeight}`,
+            );
+            this.canvas.style.width = `${this.video.videoWidth}px`;
+            this.canvas.style.height = `${this.video.videoHeight}px`;
           }
+
+          this.canvas.width = this.video.videoWidth;
+          this.canvas.height = this.video.videoHeight;
+
           this.canvas.getContext("2d")?.drawImage(this.video, 0, 0);
           requestAnimationFrame(loop);
         };
