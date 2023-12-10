@@ -14,6 +14,7 @@ import {
   createAppProtocol,
   getRandomInt,
   parseAppProtocol,
+  parseEncodedFrame,
 } from "../protocol";
 import { timer } from "../util";
 
@@ -29,7 +30,6 @@ export class ShareApp {
 
   public canvas: HTMLCanvasElement;
   public video: HTMLVideoElement;
-  public image: HTMLImageElement;
   public audio: HTMLAudioElement;
   public screenWidth: number = 0;
   public screenHeight: number = 0;
@@ -39,6 +39,18 @@ export class ShareApp {
   private order = 0;
   private tmp = new Uint8Array(0);
   private hasScreen = false;
+  private hasFirstKey = false;
+  private videoDecoder = new VideoDecoder({
+    output: (frame) => {
+      this.screenWidth = this.canvas.width = frame.displayWidth;
+      this.screenHeight = this.canvas.height = frame.displayHeight;
+      this.canvas.getContext("2d")?.drawImage(frame, 0, 0);
+      frame.close();
+    },
+    error: (error) => {
+      console.log(error);
+    },
+  });
 
   constructor(desktopId: string, rtcConfiguration: RTCConfiguration) {
     this.rtcConfiguration = rtcConfiguration;
@@ -50,12 +62,7 @@ export class ShareApp {
     this.video = document.createElement("video");
     this.audio = document.createElement("audio");
 
-    this.image = new Image();
-    this.image.onload = () => {
-      this.canvas.width = this.image.width;
-      this.canvas.height = this.image.height;
-      this.canvas.getContext("2d")?.drawImage(this.image, 0, 0);
-    };
+    this.videoDecoder.configure({ codec: "vp8" });
   }
 
   public isChannelOpen(): boolean {
@@ -122,13 +129,19 @@ export class ShareApp {
       const buf = event.data;
       const parse = parseAppProtocol(new Uint8Array(buf));
       if (parse.status === appStatus.once) {
-        const imgBase64 = btoa(
-          new Uint8Array(parse.data).reduce(
-            (data, byte) => data + String.fromCharCode(byte),
-            "",
-          ),
-        );
-        this.image.src = "data:image/jpeg;base64," + imgBase64;
+        const { keyFrame, data } = parseEncodedFrame(parse.data);
+        if (keyFrame && !this.hasFirstKey) {
+          this.hasFirstKey = true;
+        }
+        if (this.hasFirstKey) {
+          const decodeChunk = new EncodedVideoChunk({
+            type: keyFrame ? "key" : "delta",
+            data: data,
+            timestamp: 0,
+            duration: 0,
+          });
+          this.videoDecoder.decode(decodeChunk);
+        }
       } else if (parse.status === appStatus.start) {
         this.tmp = parse.data;
         this.preId = parse.id;
@@ -146,13 +159,21 @@ export class ShareApp {
         parse.order === this.order
       ) {
         this.tmp = appendBuffer(this.tmp, parse.data);
-        const imgBase64 = btoa(
-          new Uint8Array(this.tmp).reduce(
-            (data, byte) => data + String.fromCharCode(byte),
-            "",
-          ),
-        );
-        this.image.src = "data:image/jpeg;base64," + imgBase64;
+
+        const { keyFrame, data } = parseEncodedFrame(this.tmp);
+        if (keyFrame && !this.hasFirstKey) {
+          this.hasFirstKey = true;
+        }
+        if (this.hasFirstKey) {
+          const decodeChunk = new EncodedVideoChunk({
+            type: keyFrame ? "key" : "delta",
+            data: data,
+            timestamp: 0,
+            duration: 0,
+          });
+          this.videoDecoder.decode(decodeChunk);
+        }
+
         this.tmp = new Uint8Array(0);
         this.order = 0;
       } else {
