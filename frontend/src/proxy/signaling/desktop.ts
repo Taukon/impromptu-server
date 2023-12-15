@@ -1,5 +1,5 @@
 import { Socket } from "socket.io-client";
-import { Access, AppSDP, ClientInfo, FileSDP } from "../type";
+import { Access, AppSDP, ClientInfo, FileSDP } from "./type";
 
 export const reqAuth = (socket: Socket, info: ClientInfo): void => {
   socket.emit("reqAuth", info);
@@ -68,28 +68,4 @@ export const listenFileAnswerSDPToDesktop = (
       await listener(desktopId, fileSdp);
     },
   );
-};
-
-// ----------------
-
-// B <-offer- D
-export const listenFileOfferSDPToDesktop = (
-  socket: Socket,
-  listener: (desktopId: string, fileSdp: FileSDP) => Promise<void>,
-) => {
-  socket.on(
-    "shareFile-offerSDP",
-    async (desktopId: string, fileSdp: FileSDP) => {
-      await listener(desktopId, fileSdp);
-    },
-  );
-};
-
-// B -answer-> D
-export const sendFileAnswerSDPToDesktop = (
-  socket: Socket,
-  access: Access,
-  fileSdp: FileSDP,
-) => {
-  socket.emit(`shareFile-answerSDP`, access, fileSdp);
 };

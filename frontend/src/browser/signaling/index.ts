@@ -46,27 +46,6 @@ export const listenAppAnswerSDP = (
   });
 };
 
-// ----------------
-
-// B <-offer- D
-export const listenAppOfferSDP = (
-  socket: Socket,
-  listener: (desktopId: string, appSdp: AppSDP) => Promise<void>,
-) => {
-  socket.on("shareApp-offerSDP", async (desktopId: string, appSdp: AppSDP) => {
-    await listener(desktopId, appSdp);
-  });
-};
-
-// B -answer-> D
-export const sendAppAnswerSDP = (
-  socket: Socket,
-  access: Access,
-  appSdp: AppSDP,
-) => {
-  socket.emit(`shareApp-answerSDP`, access, appSdp);
-};
-
 // ---------------- File
 
 // B -offer-> D
@@ -89,28 +68,4 @@ export const listenFileAnswerSDP = (
       await listener(desktopId, fileSdp);
     },
   );
-};
-
-// ----------------
-
-// B <-offer- D
-export const listenFileOfferSDP = (
-  socket: Socket,
-  listener: (desktopId: string, fileSdp: FileSDP) => Promise<void>,
-) => {
-  socket.on(
-    "shareFile-offerSDP",
-    async (desktopId: string, fileSdp: FileSDP) => {
-      await listener(desktopId, fileSdp);
-    },
-  );
-};
-
-// B -answer-> D
-export const sendFileAnswerSDP = (
-  socket: Socket,
-  access: Access,
-  fileSdp: FileSDP,
-) => {
-  socket.emit(`shareFile-answerSDP`, access, fileSdp);
 };

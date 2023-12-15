@@ -44,20 +44,6 @@ export const signalingBrowser = (
     }
   });
 
-  // B -answer-> D
-  socket.on(`shareApp-answerSDP`, (access: Access, appSdp: AppSDP) => {
-    if (
-      userManage.checkBrowserToken(browserId, access.desktopId, access.token)
-    ) {
-      const desktopSocketId = userManage.getDesktopUser(access.desktopId)
-        ?.socketId;
-      if (desktopSocketId)
-        desktopServer
-          .to(desktopSocketId)
-          .emit(`shareApp-answerSDP`, browserId, appSdp);
-    }
-  });
-
   // File
 
   // B -offer-> D
@@ -73,30 +59,4 @@ export const signalingBrowser = (
           .emit(`shareFile-offerSDP`, browserId, fileSdp);
     }
   });
-
-  // B -answer-> D
-  socket.on(`shareFile-answerSDP`, (access: Access, fileSdp: FileSDP) => {
-    if (
-      userManage.checkBrowserToken(browserId, access.desktopId, access.token)
-    ) {
-      const desktopSocketId = userManage.getDesktopUser(access.desktopId)
-        ?.socketId;
-      if (desktopSocketId)
-        desktopServer
-          .to(desktopSocketId)
-          .emit(`shareFile-answerSDP`, browserId, fileSdp);
-    }
-  });
-
-  // // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  // socket.on(`ice`, (access: Access, type: string, ice: any) => {
-  //   if (
-  //     userManage.checkBrowserToken(browserId, access.desktopId, access.token)
-  //   ) {
-  //     const desktopSocketId = userManage.getDesktopUser(access.desktopId)
-  //       ?.socketId;
-  //     if (desktopSocketId)
-  //       desktopServer.to(desktopSocketId).emit(`ice`, browserId, type, ice);
-  //   }
-  // });
 };

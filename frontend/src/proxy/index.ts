@@ -1,7 +1,6 @@
 import { Socket, io } from "socket.io-client";
 import { Access, AppSDP, FileSDP } from "./signaling/type";
 import { ScreenApp } from "./shareApp/screen";
-import { signalingToBrowser, signalingToDesktop } from "./config";
 import {
   listenAppAnswerSDPToDesktop,
   listenFileAnswerSDPToDesktop,
@@ -17,6 +16,7 @@ import {
 } from "./signaling/browser";
 import { WatchFile } from "./shareFile/watch";
 import { TransferFile } from "./shareFile/transfer";
+import { signalingAddress } from "./config";
 
 export const automationProxy = (
   password: string,
@@ -28,26 +28,26 @@ export const automationProxy = (
   ) => void,
   removeDesktopIdFunc?: (proxyDesktopId: string) => void,
 ) => {
-  const fileSocket = io(signalingToBrowser, {
+  const proxySocket = io(signalingAddress, {
     secure: true,
     rejectUnauthorized: false,
   });
 
-  fileSocket.on("end", () => {
-    fileSocket.close();
+  proxySocket.on("end", () => {
+    proxySocket.close();
   });
 
-  fileSocket.on("disconnect", () => {
+  proxySocket.on("disconnect", () => {
     console.log("socket closed");
-    fileSocket.close();
+    proxySocket.close();
   });
 
-  fileSocket.once("desktopId", (msg) => {
+  proxySocket.once("desktopId", (msg) => {
     if (typeof msg === "string") {
       const proxyId = msg;
       if (showProxyIdFunc) showProxyIdFunc(proxyId, password);
 
-      listenProxyAuth(fileSocket, proxyId, password);
+      listenProxyAuth(proxySocket, proxyId, password);
       const reqProxyListener = async (desktopId: string, password: string) => {
         connectDesktop(
           desktopId,
@@ -56,9 +56,11 @@ export const automationProxy = (
           removeDesktopIdFunc,
         );
       };
-      listenReqProxy(fileSocket, reqProxyListener);
+      listenReqProxy(proxySocket, reqProxyListener);
     }
   });
+
+  proxySocket.emit("role", "proxy");
 };
 
 export const connectDesktop = (
@@ -71,10 +73,12 @@ export const connectDesktop = (
   ) => void,
   removeDesktopIdFunc?: (proxyDesktopId: string) => void,
 ) => {
-  const toDesktopSocket = io(signalingToDesktop, {
+  const toDesktopSocket = io(signalingAddress, {
     secure: true,
     rejectUnauthorized: false,
   });
+
+  toDesktopSocket.emit("role", "browser");
 
   toDesktopSocket.on("end", () => {
     toDesktopSocket.close();
@@ -84,8 +88,6 @@ export const connectDesktop = (
     console.log("socket closed");
     toDesktopSocket.close();
   });
-
-  reqAuth(toDesktopSocket, { desktopId, password });
 
   toDesktopSocket.once(
     "resAuth",
@@ -107,6 +109,8 @@ export const connectDesktop = (
       }
     },
   );
+
+  reqAuth(toDesktopSocket, { desktopId, password });
 };
 
 const setShare = (
@@ -122,7 +126,7 @@ const setShare = (
   removeDesktopIdFunc?: (proxyDesktopId: string) => void,
 ) => {
   let proxyDesktopId: string | undefined;
-  const toBrowserSocket = io(signalingToBrowser, {
+  const toBrowserSocket = io(signalingAddress, {
     secure: true,
     rejectUnauthorized: false,
   });
@@ -241,4 +245,6 @@ const setShare = (
       }
     },
   );
+
+  toBrowserSocket.emit("role", "desktop");
 };

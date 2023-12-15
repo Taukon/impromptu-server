@@ -1,16 +1,10 @@
 import { Server, Socket } from "socket.io";
 import { UserManage } from "../userManage";
-import {
-  AppSDP,
-  AuthProxyInfo,
-  FileSDP,
-  ReqAuthProxyInfo,
-  ReqProxyInfo,
-} from "./type";
+import { AppSDP, AuthProxyInfo, FileSDP, ReqAuthProxyInfo } from "./type";
 import { peerConnectionConfig } from "../config";
 
 export const signalingDesktop = (
-  desktopServer: Server,
+  proxyServer: Server,
   browserServer: Server,
   socket: Socket,
   userManage: UserManage,
@@ -56,36 +50,11 @@ export const signalingDesktop = (
         desktopId: info.desktopId,
       };
       userManage.addProxyInfo(info.desktopId, info.desktopPassword);
-      desktopServer.to(proxyUser.socketId).emit("reqProxyAuth", authInfo);
+      proxyServer.to(proxyUser.socketId).emit("reqProxyAuth", authInfo);
     }
   });
-
-  socket.on(
-    "resProxyAuth",
-    async (res: { desktopId: string; status: boolean }) => {
-      const password = userManage.getDesktopUser(res.desktopId)
-        ?.passwordForProxy;
-      if (res.status && password) {
-        const proxyInfo: ReqProxyInfo = {
-          desktopId: res.desktopId,
-          password: password,
-        };
-        socket.emit("reqProxy", proxyInfo);
-      }
-    },
-  );
 
   // App
-
-  // D -offer-> B
-  socket.on(`shareApp-offerSDP`, (browserId: string, appSdp: AppSDP) => {
-    const browserSocketId = userManage.getBrowserSocketId(browserId);
-    if (browserSocketId) {
-      browserServer
-        .to(browserSocketId)
-        .emit(`shareApp-offerSDP`, desktopId, appSdp);
-    }
-  });
 
   // D -answer-> B
   socket.on(`shareApp-answerSDP`, (browserId: string, appSdp: AppSDP) => {
@@ -100,16 +69,6 @@ export const signalingDesktop = (
 
   // File
 
-  // D -offer-> D
-  socket.on(`shareFile-offerSDP`, (browserId: string, fileSdp: FileSDP) => {
-    const browserSocketId = userManage.getBrowserSocketId(browserId);
-    if (browserSocketId) {
-      browserServer
-        .to(browserSocketId)
-        .emit(`shareFile-offerSDP`, desktopId, fileSdp);
-    }
-  });
-
   // D -answer-> B
   socket.on(`shareFile-answerSDP`, (browserId: string, fileSdp: FileSDP) => {
     const browserSocketId = userManage.getBrowserSocketId(browserId);
@@ -120,11 +79,4 @@ export const signalingDesktop = (
         .emit(`shareFile-answerSDP`, desktopId, fileSdp);
     }
   });
-
-  // socket.on(`shareFile-ice`, (browserId: string, type: string, ice: string) => {
-  //   const browserSocketId = userManage.getBrowserSocketId(browserId);
-  //   if (browserSocketId) {
-  //     browserServer.to(browserSocketId).emit(`shareFile-ice`, desktopId, type, ice);
-  //   }
-  // });
 };

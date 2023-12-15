@@ -1,11 +1,5 @@
 import { Socket } from "socket.io-client";
-import {
-  AppSDP,
-  AuthInfo,
-  AuthProxyInfo,
-  FileSDP,
-  ReqProxyInfo,
-} from "../type";
+import { AppSDP, AuthInfo, AuthProxyInfo, FileSDP, ReqProxyInfo } from "./type";
 
 export const listenProxyAuth = (
   socket: Socket,
@@ -66,30 +60,6 @@ export const sendAppAnswerSDPToBrowser = (
 };
 
 // ---------------- File
-
-// B <-offer- D
-export const sendFileOfferSDPToBrowser = (
-  socket: Socket,
-  browserId: string,
-  fileSdp: FileSDP,
-) => {
-  socket.emit(`shareFile-offerSDP`, browserId, fileSdp);
-};
-
-// B -answer-> D
-export const listenFileAnswerSDPToBrowser = (
-  socket: Socket,
-  listener: (browserId: string, fileSdp: FileSDP) => Promise<void>,
-) => {
-  socket.on(
-    "shareFile-answerSDP",
-    async (browserId: string, fileSdp: FileSDP) => {
-      await listener(browserId, fileSdp);
-    },
-  );
-};
-
-// ----------------
 
 // B -offer-> D
 export const listenFileOfferSDPToBrowser = (

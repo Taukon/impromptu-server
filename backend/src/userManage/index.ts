@@ -6,11 +6,30 @@ import {
   DesktopId,
   DesktopUser,
   DesktopUserList,
+  ProxyId,
+  ProxyUser,
+  ProxyUserList,
 } from "./manage";
 
 export class UserManage {
   private desktopUser: DesktopUserList = {};
   private browserUser: BrowserUserList = {};
+  private proxyUser: ProxyUserList = {};
+
+  public addProxyUser(socketId: string): ProxyId {
+    const proxyId = socketId;
+    this.proxyUser[proxyId] = { socketId: socketId };
+    return proxyId;
+  }
+
+  public getProxyUser(proxyId: string): ProxyUser | undefined {
+    const proxyUser = this.proxyUser[proxyId];
+    return proxyUser;
+  }
+
+  public removeProxyUser(proxyId: string): void {
+    if (this.proxyUser[proxyId]) delete this.proxyUser[proxyId];
+  }
 
   public addDesktopUser(socketId: string): DesktopId {
     const desktopId = socketId;

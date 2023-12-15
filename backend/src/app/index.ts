@@ -6,6 +6,7 @@ import { Server } from "socket.io";
 import { UserManage } from "../userManage";
 import { signalingBrowser } from "../signaling/browser";
 import { signalingDesktop } from "../signaling/desktop";
+import { signalingProxy } from "../signaling/proxy";
 
 const getIpAddress = (): string | undefined => {
   const nets = networkInterfaces();
@@ -13,12 +14,15 @@ const getIpAddress = (): string | undefined => {
   if (net1) {
     return net1.address;
   }
-  const net2 = nets["enp0s8"]?.find((v) => v.family == "IPv4");
-  return net2 != null ? net2.address : undefined;
+  const net2 = nets["enp0s3"]?.find((v) => v.family == "IPv4");
+  if (net2) {
+    return net2.address;
+  }
+  const net3 = nets["enp0s8"]?.find((v) => v.family == "IPv4");
+  return net3 != null ? net3.address : undefined;
 };
 
-const clientPort = 3000; // --- https Port for client
-const desktopPort = 3100; // --- https Port for desktop
+const clientPort = 3000; // --- https Port
 
 const ip_addr = getIpAddress() ?? "127.0.0.1"; // --- IP Address
 
@@ -33,41 +37,30 @@ const options = {
   cert: fs.readFileSync("../ssl/cert.pem", "utf-8"),
 };
 
-// --- WebSocket Server For Client ---
-const httpsServerForClient = https.createServer(options, app);
+// --- WebSocket Server ---
+const httpsServer = https.createServer(options, app);
 
-const clientServer = new Server(httpsServerForClient, {
-  cors: { origin: "*" },
-});
+const socketServer = new Server(httpsServer);
 
-httpsServerForClient.listen(clientPort, () => {
+httpsServer.listen(clientPort, () => {
   console.log(`https://${ip_addr}:${clientPort}/impromptu.html`);
   console.log(`https://${ip_addr}:${clientPort}/impromptu-proxy.html`);
-});
-
-// --- WebSocket Server For Desktop ---
-const httpsServerForDesktop = https.createServer(options, app);
-
-const desktopServer = new Server(httpsServerForDesktop, {
-  cors: { origin: "*" },
-});
-
-httpsServerForDesktop.listen(desktopPort, () => {
-  console.log(
-    "https://" + ip_addr + ":" + desktopPort + "  <-- desktop server",
-  );
 });
 
 const start = async () => {
   const userTable = new UserManage();
 
-  clientServer.on("connection", (sock) => {
-    signalingBrowser(desktopServer, sock, userTable);
-  });
-
-  desktopServer.on("connection", (sock) => {
-    console.log(`desktopId: ${sock.id}`);
-    signalingDesktop(desktopServer, clientServer, sock, userTable);
+  socketServer.on("connection", (socket) => {
+    socket.once("role", (role: string) => {
+      console.log(`${role}: ${socket.id}`);
+      if (role === "browser") {
+        signalingBrowser(socketServer, socket, userTable);
+      } else if (role === "desktop") {
+        signalingDesktop(socketServer, socketServer, socket, userTable);
+      } else if (role === "proxy") {
+        signalingProxy(socket, userTable);
+      }
+    });
   });
 };
 
