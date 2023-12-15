@@ -42,7 +42,7 @@ export const signalingDesktop = (
   });
 
   socket.on("reqAutoProxy", (info: ReqAuthProxyInfo) => {
-    const proxyUser = userManage.getDesktopUser(info.proxyId);
+    const proxyUser = userManage.getProxyUser(info.proxyId);
     if (proxyUser?.socketId) {
       const authInfo: AuthProxyInfo = {
         proxyId: info.proxyId,

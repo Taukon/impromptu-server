@@ -1,28 +1,13 @@
 import { Socket } from "socket.io-client";
+import crypto from "crypto-js";
 import { Access, AppSDP, ClientInfo, FileSDP } from "./type";
 
 export const reqAuth = (socket: Socket, info: ClientInfo): void => {
-  socket.emit("reqAuth", info);
-};
-
-export const reqAccess = (
-  socket: Socket,
-  desktopId: string,
-  password: string,
-  init: (socket: Socket, access: Access) => void,
-) => {
-  reqAuth(socket, { desktopId, password });
-
-  socket.once("resAuth", async (info: Access | undefined) => {
-    console.log(info);
-    if (info) {
-      const access: Access = {
-        desktopId: info.desktopId,
-        token: info.token,
-      };
-      init(socket, access);
-    }
-  });
+  const authInfo: ClientInfo = {
+    desktopId: info.desktopId,
+    password: crypto.SHA256(info.password).toString(),
+  };
+  socket.emit("reqAuth", authInfo);
 };
 
 // ---------------- App

@@ -11,12 +11,11 @@ import {
   listenAppOfferSDPToBrowser,
   listenAuth,
   listenFileOfferSDPToBrowser,
-  listenProxyAuth,
-  listenReqProxy,
 } from "./signaling/browser";
 import { WatchFile } from "./shareFile/watch";
 import { TransferFile } from "./shareFile/transfer";
 import { signalingAddress } from "./config";
+import { listenProxyAuth, listenReqProxy } from "./signaling/proxy";
 
 export const automationProxy = (
   password: string,
@@ -42,7 +41,7 @@ export const automationProxy = (
     proxySocket.close();
   });
 
-  proxySocket.once("desktopId", (msg) => {
+  proxySocket.once("proxyId", (msg) => {
     if (typeof msg === "string") {
       const proxyId = msg;
       if (showProxyIdFunc) showProxyIdFunc(proxyId, password);
