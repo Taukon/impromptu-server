@@ -1,4 +1,4 @@
-public/app*
+public/browser*
 public/proxy*
 ssl/cert.pem
 ssl/key.pem
