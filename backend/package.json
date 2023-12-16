@@ -10,7 +10,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "webpack --progress",
     "start": "node dist/app.js",
-    "lint": "prettier --write 'src/**/*.ts' && eslint --fix --ext .ts src"
+    "lint": "eslint --fix src && prettier --write 'src/**/*.ts'",
+    "lint:ci": "eslint src && prettier --check 'src/**/*.ts'"
   },
   "keywords": [],
   "author": "",
