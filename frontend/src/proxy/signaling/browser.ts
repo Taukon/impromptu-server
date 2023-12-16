@@ -1,34 +1,6 @@
 import { Socket } from "socket.io-client";
-import {
-  AppSDP,
-  AuthInfo,
-  AuthProxyInfo,
-  FileSDP,
-  ReqProxyInfo,
-} from "../type";
-
-export const listenProxyAuth = (
-  socket: Socket,
-  proxyId: string,
-  password: string,
-) => {
-  socket.on("reqProxyAuth", (info: AuthProxyInfo) => {
-    if (proxyId === info.proxyId && password === info.password) {
-      socket.emit("resProxyAuth", { desktopId: info.desktopId, status: true });
-    } else {
-      socket.emit("resProxyAuth", { desktopId: info.desktopId, status: false });
-    }
-  });
-};
-
-export const listenReqProxy = (
-  socket: Socket,
-  listener: (desktopId: string, password: string) => Promise<void>,
-) => {
-  socket.on("reqProxy", async (info: ReqProxyInfo) => {
-    await listener(info.desktopId, info.password);
-  });
-};
+import crypto from "crypto-js";
+import { AppSDP, AuthInfo, FileSDP } from "./type";
 
 export const listenAuth = (
   socket: Socket,
@@ -36,7 +8,8 @@ export const listenAuth = (
   password: string,
 ) => {
   socket.on("reqAuth", (info: AuthInfo) => {
-    if (desktopId === info.desktopId && password === info.password) {
+    const hashedPassword = crypto.SHA256(password).toString();
+    if (desktopId === info.desktopId && hashedPassword === info.password) {
       socket.emit("resAuth", { browserId: info.browserId, status: true });
     } else {
       socket.emit("resAuth", { browserId: info.browserId, status: false });
@@ -66,30 +39,6 @@ export const sendAppAnswerSDPToBrowser = (
 };
 
 // ---------------- File
-
-// B <-offer- D
-export const sendFileOfferSDPToBrowser = (
-  socket: Socket,
-  browserId: string,
-  fileSdp: FileSDP,
-) => {
-  socket.emit(`shareFile-offerSDP`, browserId, fileSdp);
-};
-
-// B -answer-> D
-export const listenFileAnswerSDPToBrowser = (
-  socket: Socket,
-  listener: (browserId: string, fileSdp: FileSDP) => Promise<void>,
-) => {
-  socket.on(
-    "shareFile-answerSDP",
-    async (browserId: string, fileSdp: FileSDP) => {
-      await listener(browserId, fileSdp);
-    },
-  );
-};
-
-// ----------------
 
 // B -offer-> D
 export const listenFileOfferSDPToBrowser = (

@@ -8,17 +8,19 @@ import {
 } from "../browser";
 import { Access } from "../browser/signaling/type";
 import { timer } from "../browser/util";
+import { signalingAddress } from "../browser/config";
 
 const createWebSocket = (): Socket => {
-  const sock = io("/");
-  sock.on("end", () => {
-    sock.close();
+  const socket = io(signalingAddress);
+
+  socket.on("end", () => {
+    socket.close();
   });
-  sock.on("disconnect", () => {
+  socket.on("disconnect", () => {
     console.log("socket closed");
-    sock.close();
+    socket.close();
   });
-  return sock;
+  return socket;
 };
 
 const clientList: BrowserWebRTC[] = [];

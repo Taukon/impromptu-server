@@ -34,8 +34,7 @@ export const reqAccess = (
     rtcConfiguration: RTCConfiguration,
   ) => void,
 ) => {
-  reqAuth(socket, { desktopId, password });
-
+  socket.emit("role", "browser");
   socket.once(
     "resAuth",
     async (info: Access | undefined, rtcConfiguration?: RTCConfiguration) => {
@@ -50,6 +49,7 @@ export const reqAccess = (
       }
     },
   );
+  reqAuth(socket, { desktopId, password });
 };
 
 export const listenAnswerSDP = (
