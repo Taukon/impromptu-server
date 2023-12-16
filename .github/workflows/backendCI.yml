@@ -6,6 +6,9 @@ on:
     paths:
       - 'backend/src/**'
 
+permissions:
+  contents: read
+
 jobs:
   lint:
     name: Lint
