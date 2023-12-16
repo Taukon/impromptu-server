@@ -24,7 +24,8 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
 
+      - name: Install dependencies
+        run: npm install -D
+
       - name: Run lint
-        run: |
-          npm install --only=dev
-          npm run lint:ci
+        run: npm run lint:ci
