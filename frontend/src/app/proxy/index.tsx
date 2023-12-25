@@ -2,8 +2,8 @@
 import { useState } from "react";
 import { Impromptu } from "../../proxy";
 import { createRoot } from "react-dom/client";
-import { ManualMode } from "./ManualMode";
-import { AutoMode } from "./AutoMode";
+import { ManualMode } from "./manualMode";
+import { AutoMode } from "./autoMode";
 
 export const impromptu = new Impromptu();
 
