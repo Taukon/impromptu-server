@@ -8,7 +8,7 @@ module.exports = {
   target: 'web',
 
   entry: {
-    proxy: path.join(__dirname, 'src', 'app', 'proxy.ts'),
+    proxy: path.join(__dirname, 'src', 'app', 'proxy', 'index.tsx'),
     browser: path.join(__dirname, 'src', 'app', 'browser', 'index.tsx'),
   },
 
