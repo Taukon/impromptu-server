@@ -29,7 +29,6 @@ export class ShareApp {
   public desktopId: string;
 
   public canvas: HTMLCanvasElement;
-  public video: HTMLVideoElement;
   public audio: HTMLAudioElement;
   public screenWidth: number = 0;
   public screenHeight: number = 0;
@@ -59,7 +58,6 @@ export class ShareApp {
     this.canvas = document.createElement("canvas");
     this.canvas.setAttribute("tabindex", String(0));
 
-    this.video = document.createElement("video");
     this.audio = document.createElement("audio");
 
     this.videoDecoder.configure({ codec: "vp8" });
@@ -206,33 +204,7 @@ export class ShareApp {
     });
 
     this.screenTrackConnection.ontrack = (event) => {
-      if (event.track.kind === "video" && event.streams[0]) {
-        // this.video.srcObject = new MediaStream([event.track]);
-        this.video.srcObject = event.streams[0];
-        this.video.onloadedmetadata = () => this.video.play();
-
-        const loop = () => {
-          if (
-            this.screenWidth < this.video.videoWidth &&
-            this.screenHeight < this.video.videoHeight
-          ) {
-            console.log(
-              `canvas video: ${this.video.videoWidth} ${this.video.videoHeight}`,
-            );
-            this.screenWidth = this.video.videoWidth;
-            this.screenHeight = this.video.videoHeight;
-            this.canvas.style.width = `${this.video.videoWidth}px`;
-            this.canvas.style.height = `${this.video.videoHeight}px`;
-          }
-
-          this.canvas.width = this.video.videoWidth;
-          this.canvas.height = this.video.videoHeight;
-
-          this.canvas.getContext("2d")?.drawImage(this.video, 0, 0);
-          requestAnimationFrame(loop);
-        };
-        requestAnimationFrame(loop);
-      } else if (event.track.kind === "audio" && event.streams[0]) {
+      if (event.track.kind === "audio" && event.streams[0]) {
         // this.audio.srcObject = new MediaStream([event.track]);
         this.audio.srcObject = event.streams[0];
         this.audio.play();
