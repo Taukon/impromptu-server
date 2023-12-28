@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { ScreenChart } from "./ScreenChart";
+import { ScreenChart } from "./screenChart";
 import { impromptu } from ".";
 
 export const ManualMode: React.FC<{setLock: React.Dispatch<React.SetStateAction<boolean>>}> = ({setLock}) => {
