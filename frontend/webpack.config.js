@@ -8,8 +8,8 @@ module.exports = {
   target: 'web',
 
   entry: {
-    browser: path.join(__dirname, 'src', 'app', 'browser.ts'),
-    proxy: path.join(__dirname, 'src', 'app', 'proxy.ts'),
+    proxy: path.join(__dirname, 'src', 'app', 'proxy', 'index.tsx'),
+    browser: path.join(__dirname, 'src', 'app', 'browser', 'index.tsx'),
   },
 
   output: {
@@ -19,7 +19,7 @@ module.exports = {
   module: {
     rules: [
       {
-        test: /\.ts$/,
+        test: /\.tsx?$/,
         use: [
             {
               loader: "ts-loader", 
@@ -29,7 +29,7 @@ module.exports = {
     ]
   },
   resolve: {
-    extensions:['.ts', '.js']
+    extensions:[".ts", ".tsx", ".js", ".json"]
   },
   optimization: {
     minimizer: [new TerserPlugin({

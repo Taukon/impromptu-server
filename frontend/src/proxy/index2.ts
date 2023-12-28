@@ -19,6 +19,7 @@ import { listenProxyAuth, listenReqProxy } from "./signaling/proxy";
 
 type Proxy = {
   replaceId: string;
+  desktopSocket: Socket;
   replaceSocket: Socket;
   screenApp: ScreenApp;
   controlApp: ControlApp;
@@ -28,8 +29,6 @@ type Proxy = {
 
 export class Impromptu {
   public proxies: Proxy[] = [];
-  private passwords: { [desktopId: string]: string } = {};
-  private desktopSocket: Socket;
   private autoProxy: boolean = false;
 
   public showIdFunc?: (
@@ -40,47 +39,7 @@ export class Impromptu {
   public removeIdFunc?: (replaceId: string) => void;
   public showProxyIdFunc?: (proxyId: string, password: string) => void;
 
-  constructor() {
-    this.desktopSocket = io(signalingAddress, {
-      secure: true,
-      rejectUnauthorized: false,
-      autoConnect: false,
-    });
-
-    this.desktopSocket.connect();
-    this.desktopSocket.emit("role", "browser");
-
-    this.desktopSocket.on("end", () => {
-      this.desktopSocket.close();
-    });
-
-    this.desktopSocket.on("disconnect", () => {
-      console.log("socket closed");
-      this.desktopSocket.close();
-    });
-
-    this.desktopSocket.once(
-      "resAuth",
-      async (info: Access | undefined, rtcConfiguration?: RTCConfiguration) => {
-        if (info && rtcConfiguration) {
-          const access: Access = {
-            desktopId: info.desktopId,
-            token: info.token,
-          };
-          const password = this.passwords[access.desktopId];
-          if (password) {
-            this.setProxy(
-              this.desktopSocket,
-              access,
-              password,
-              rtcConfiguration,
-            );
-            delete this.passwords[access.desktopId];
-          }
-        }
-      },
-    );
-  }
+  constructor() {}
 
   public autoConnectDesktop(proxyPassword: string) {
     if (this.autoProxy) return;
@@ -122,8 +81,39 @@ export class Impromptu {
   }
 
   public connectDesktop(desktopId: string, password: string) {
-    reqAuth(this.desktopSocket, { desktopId, password });
-    this.passwords[desktopId] = password;
+    const desktopSocket = io(signalingAddress, {
+      secure: true,
+      rejectUnauthorized: false,
+      autoConnect: false,
+    });
+
+    desktopSocket.connect();
+    desktopSocket.emit("role", "browser");
+
+    desktopSocket.on("end", () => {
+      desktopSocket.close();
+    });
+
+    desktopSocket.on("disconnect", () => {
+      console.log("socket closed");
+      desktopSocket.close();
+    });
+
+    desktopSocket.once(
+      "resAuth",
+      async (info: Access | undefined, rtcConfiguration?: RTCConfiguration) => {
+        if (info && rtcConfiguration) {
+          const access: Access = {
+            desktopId: info.desktopId,
+            token: info.token,
+          };
+
+          this.setProxy(desktopSocket, access, password, rtcConfiguration);
+        }
+      },
+    );
+
+    reqAuth(desktopSocket, { desktopId, password });
   }
 
   private setProxy(
@@ -161,6 +151,7 @@ export class Impromptu {
 
           const proxy: Proxy = {
             replaceId: replaceId,
+            desktopSocket: desktopSocket,
             replaceSocket: replaceSocket,
             screenApp: new ScreenApp(
               desktopSocket,
