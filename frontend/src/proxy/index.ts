@@ -3,7 +3,7 @@ import { ControlApp } from "./shareApp/control";
 import { ScreenApp, ScreenChartData } from "./shareApp/screen";
 import { TransferFile } from "./shareFile/transfer";
 import { WatchFile } from "./shareFile/watch";
-import { signalingAddress } from "./config";
+import { signalingAddress, socketOption } from "./config";
 import { Access, AppSDP, FileSDP } from "./signaling/type";
 import {
   listenAppOfferSDPToBrowser,
@@ -41,11 +41,7 @@ export class Impromptu {
   public showProxyIdFunc?: (proxyId: string, password: string) => void;
 
   constructor() {
-    this.desktopSocket = io(signalingAddress, {
-      secure: true,
-      rejectUnauthorized: false,
-      autoConnect: false,
-    });
+    this.desktopSocket = io(signalingAddress, socketOption);
 
     this.desktopSocket.connect();
     this.desktopSocket.emit("role", "browser");
@@ -97,11 +93,7 @@ export class Impromptu {
     if (this.autoProxy) return;
     this.autoProxy = true;
 
-    const proxySocket = io(signalingAddress, {
-      secure: true,
-      rejectUnauthorized: false,
-      autoConnect: false,
-    });
+    const proxySocket = io(signalingAddress, socketOption);
     proxySocket.connect();
 
     proxySocket.on("end", () => {
@@ -145,11 +137,7 @@ export class Impromptu {
   ) {
     let replaceId: string | undefined;
 
-    const replaceSocket = io(signalingAddress, {
-      secure: true,
-      rejectUnauthorized: false,
-      autoConnect: false,
-    });
+    const replaceSocket = io(signalingAddress, socketOption);
     replaceSocket.connect();
 
     replaceSocket.on("end", () => {
