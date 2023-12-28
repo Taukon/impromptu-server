@@ -3,7 +3,7 @@ import { ShareApp } from "./shareApp";
 import { Access, AppSDP, FileSDP } from "./signaling/type";
 import { listenAppAnswerSDP, listenFileAnswerSDP, reqAuth } from "./signaling";
 import { ShareFile } from "./shareFile";
-import { signalingAddress } from "./config";
+import { signalingAddress, socketOption } from "./config";
 
 type Browser = {
   access: Access;
@@ -16,7 +16,7 @@ export class Impromptu {
   private socket: Socket;
 
   constructor() {
-    this.socket = io(signalingAddress, { autoConnect: false });
+    this.socket = io(signalingAddress, socketOption);
   }
 
   public deleteDesktop(desktopId: string): void {

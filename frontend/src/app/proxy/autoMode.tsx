@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { ScreenChart } from "./ScreenChart";
 import { impromptu } from ".";
 
 export const AutoMode: React.FC<{setLock: React.Dispatch<React.SetStateAction<boolean>>}> = ({setLock}) => {
@@ -39,14 +40,43 @@ export const AutoMode: React.FC<{setLock: React.Dispatch<React.SetStateAction<bo
                     setProxyPassword(passwordRef.current.value);
                 }
             }} disabled={proxyPassword ? true : false}>開始</button>
-            {proxyId && proxyPassword && <p>Proxy ID: {proxyId} | Password: {proxyPassword}</p>}
-            {proxy.map( v => {
-                return (
-                    <>
-                    <p>Original ID: {v[0]} | Replace ID: {v[1]} | Password: {v[2]}</p>
-                    </>
-                );
-            })}
+            {proxyId && proxyPassword && 
+            <table  border={1}>
+                <tr>
+                    <th>Proxy ID</th>
+                    <th>Password</th>
+                </tr>
+                <tr>
+                    <td>{proxyId} <button onClick={() => navigator.clipboard.writeText(proxyId)}>copy</button></td>
+                    <td>{proxyPassword} <button onClick={() => navigator.clipboard.writeText(proxyPassword)}>copy</button></td>
+                </tr>
+            </table>
+            }
+            
+            <table border={1}>
+                <tr>
+                    <th>Original ID</th>
+                    <th>Replace ID</th>
+                    <th>Password</th>
+                </tr>
+                {proxy.map( v => {
+                    return (
+                      <>
+                        <tr>
+                            <td>{v[0]} <button onClick={() => navigator.clipboard.writeText(v[0])}>copy</button></td>
+                            <td>{v[1]} <button onClick={() => navigator.clipboard.writeText(v[1])}>copy</button></td>
+                            <td>{v[2]} <button onClick={() => navigator.clipboard.writeText(v[2])}>copy</button></td>
+                        </tr>
+                        <tr>
+                          <td colSpan={3}>
+                            <ScreenChart replaceId={v[1]} />
+                          </td>
+                        </tr>
+                      </>
+                    );
+                })}
+            </table>
+            
         </>
     );
 };

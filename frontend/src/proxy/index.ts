@@ -1,9 +1,9 @@
 import { Socket, io } from "socket.io-client";
 import { ControlApp } from "./shareApp/control";
-import { ScreenApp } from "./shareApp/screen";
+import { ScreenApp, ScreenChartData } from "./shareApp/screen";
 import { TransferFile } from "./shareFile/transfer";
 import { WatchFile } from "./shareFile/watch";
-import { signalingAddress } from "./config";
+import { signalingAddress, socketOption } from "./config";
 import { Access, AppSDP, FileSDP } from "./signaling/type";
 import {
   listenAppOfferSDPToBrowser,
@@ -41,11 +41,7 @@ export class Impromptu {
   public showProxyIdFunc?: (proxyId: string, password: string) => void;
 
   constructor() {
-    this.desktopSocket = io(signalingAddress, {
-      secure: true,
-      rejectUnauthorized: false,
-      autoConnect: false,
-    });
+    this.desktopSocket = io(signalingAddress, socketOption);
 
     this.desktopSocket.connect();
     this.desktopSocket.emit("role", "browser");
@@ -59,7 +55,7 @@ export class Impromptu {
       this.desktopSocket.close();
     });
 
-    this.desktopSocket.once(
+    this.desktopSocket.on(
       "resAuth",
       async (info: Access | undefined, rtcConfiguration?: RTCConfiguration) => {
         if (info && rtcConfiguration) {
@@ -82,15 +78,22 @@ export class Impromptu {
     );
   }
 
+  public async getScreenLostRate(
+    replaceId: string,
+  ): Promise<{ exist: boolean; data: ScreenChartData[] }> {
+    const proxy = this.proxies.find((v) => v.replaceId === replaceId);
+    if (proxy) {
+      const data = await proxy.screenApp.getLostRates();
+      return { exist: true, data: data };
+    }
+    return { exist: false, data: [] };
+  }
+
   public autoConnectDesktop(proxyPassword: string) {
     if (this.autoProxy) return;
     this.autoProxy = true;
 
-    const proxySocket = io(signalingAddress, {
-      secure: true,
-      rejectUnauthorized: false,
-      autoConnect: false,
-    });
+    const proxySocket = io(signalingAddress, socketOption);
     proxySocket.connect();
 
     proxySocket.on("end", () => {
@@ -134,11 +137,7 @@ export class Impromptu {
   ) {
     let replaceId: string | undefined;
 
-    const replaceSocket = io(signalingAddress, {
-      secure: true,
-      rejectUnauthorized: false,
-      autoConnect: false,
-    });
+    const replaceSocket = io(signalingAddress, socketOption);
     replaceSocket.connect();
 
     replaceSocket.on("end", () => {
