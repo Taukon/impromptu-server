@@ -12,11 +12,22 @@ import { timer } from "../util";
 
 const waitTime = 2 * 1000;
 
+export type ScreenChartData = {
+  name: string;
+  lostRate: number;
+};
+
 export class ScreenApp {
   private screenChannelConnection?: RTCPeerConnection;
   private screenDesktopChannel?: RTCDataChannel;
   private screenTrackConnection?: RTCPeerConnection;
-  private screenBrowserChannels: { [browserId: string]: RTCDataChannel } = {};
+  private screenBrowserChannels: {
+    [browserId: string]: {
+      connection: RTCPeerConnection;
+      channel: RTCDataChannel;
+      initialRecv: number;
+    };
+  } = {};
   private screenBrowserTracks: { [browserId: string]: RTCPeerConnection } = {};
 
   private rtcConfigurationDesktop: RTCConfiguration;
@@ -40,6 +51,46 @@ export class ScreenApp {
     this.toBrowserSocket = toBrowserSocket;
     this.rtcConfigurationDesktop = rtcConfigurationDesktop;
     this.rtcConfigurationBrowser = rtcConfigurationBrowser;
+  }
+
+  // // https://www.w3.org/TR/webrtc-stats/#dom-rtcdatachannelstats-state
+  private async getScreenDesktopStats(): Promise<number | undefined> {
+    const stats = await this.screenChannelConnection?.getStats();
+    if (stats) {
+      let totalRecv = 0;
+      stats.forEach((report) => {
+        if (report.type === "data-channel" && report.messagesReceived) {
+          totalRecv = report.messagesReceived;
+        }
+      });
+
+      return totalRecv > 0 ? totalRecv : undefined;
+    }
+    return undefined;
+  }
+
+  public async getLostRates(): Promise<ScreenChartData[]> {
+    const totalRecv = await this.getScreenDesktopStats();
+    if (totalRecv) {
+      const lostList = Object.entries(this.screenBrowserChannels).map(
+        async ([k, v]) => {
+          const stats = await v.connection.getStats();
+          let totalLost = 0;
+          stats.forEach((report) => {
+            if (report.type === "data-channel" && report.messagesSent) {
+              totalLost = totalRecv - v.initialRecv - report.messagesSent;
+            }
+          });
+          const dp = 1000;
+          const lostRate = Math.floor((totalLost / totalRecv) * 100 * dp) / dp;
+          return { name: k, lostRate: lostRate };
+        },
+      );
+
+      return await Promise.all(lostList);
+    }
+
+    return [];
   }
 
   // send Offer SDP to Desktop & send Answer SDP to Browser
@@ -104,7 +155,7 @@ export class ScreenApp {
 
     screenChannel.onclose = () => {
       Object.values(this.screenBrowserChannels).forEach((v) => {
-        v.close();
+        v.channel.close();
       });
       delete this.screenChannelConnection;
       delete this.screenDesktopChannel;
@@ -112,7 +163,7 @@ export class ScreenApp {
 
     screenChannel.onerror = () => {
       Object.values(this.screenBrowserChannels).forEach((v) => {
-        v.close();
+        v.channel.close();
       });
       delete this.screenChannelConnection;
       delete this.screenDesktopChannel;
@@ -120,8 +171,8 @@ export class ScreenApp {
 
     screenChannel.onmessage = (event) => {
       Object.values(this.screenBrowserChannels).forEach((v) => {
-        if (v.readyState === "open" && v.bufferedAmount === 0) {
-          v.send(event.data);
+        if (v.channel.readyState === "open" && v.channel.bufferedAmount === 0) {
+          v.channel.send(event.data);
         }
       });
     };
@@ -224,10 +275,19 @@ export class ScreenApp {
     );
 
     screenConnection.ondatachannel = (event: RTCDataChannelEvent) => {
-      event.channel.onopen = () => {
-        if (this.screenChannelConnection?.connectionState === "connected") {
-          this.screenBrowserChannels[browserId]?.close();
-          this.screenBrowserChannels[browserId] = event.channel;
+      event.channel.onopen = async () => {
+        const initialRecv = await this.getScreenDesktopStats();
+        if (
+          this.screenChannelConnection?.connectionState === "connected" &&
+          initialRecv
+        ) {
+          this.screenBrowserChannels[browserId]?.channel.close();
+          this.screenBrowserChannels[browserId]?.connection.close();
+          this.screenBrowserChannels[browserId] = {
+            connection: screenConnection,
+            channel: event.channel,
+            initialRecv: initialRecv,
+          };
         } else {
           event.channel.close();
         }

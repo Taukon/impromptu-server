@@ -1,6 +1,6 @@
 import { Socket, io } from "socket.io-client";
 import { ControlApp } from "./shareApp/control";
-import { ScreenApp } from "./shareApp/screen";
+import { ScreenApp, ScreenChartData } from "./shareApp/screen";
 import { TransferFile } from "./shareFile/transfer";
 import { WatchFile } from "./shareFile/watch";
 import { signalingAddress } from "./config";
@@ -59,7 +59,7 @@ export class Impromptu {
       this.desktopSocket.close();
     });
 
-    this.desktopSocket.once(
+    this.desktopSocket.on(
       "resAuth",
       async (info: Access | undefined, rtcConfiguration?: RTCConfiguration) => {
         if (info && rtcConfiguration) {
@@ -80,6 +80,17 @@ export class Impromptu {
         }
       },
     );
+  }
+
+  public async getScreenLostRate(
+    replaceId: string,
+  ): Promise<{ exist: boolean; data: ScreenChartData[] }> {
+    const proxy = this.proxies.find((v) => v.replaceId === replaceId);
+    if (proxy) {
+      const data = await proxy.screenApp.getLostRates();
+      return { exist: true, data: data };
+    }
+    return { exist: false, data: [] };
   }
 
   public autoConnectDesktop(proxyPassword: string) {
