@@ -1,25 +1,21 @@
 import { useEffect, useRef, useState } from "react";
 import { timer } from "../../browser/util";
 import { impromptu } from ".";
-import { getRandomStringId } from "../../browser/shareFile/utils";
-
-
 
 export const AccessDesktop: React.FC = () => {
-
-  const [res, setRes] = useState<string>();
+  const [res, setRes] = useState<{id: string}>();
   const [openShare, setOpenShare] = useState<boolean>(false);
 
   const once = useRef(true);
   useEffect(()=>{    
     if (!once.current) return;
-    impromptu.listenDesktopRes((v) => {setRes(`${v.access.desktopId}-${getRandomStringId()}`);})
+    impromptu.newDesktopFuncForUI = (v) => {setRes({...res, id: v.access.desktopId})};
     once.current = false;
   }, []);
 
-  console.log(`${res}`);
 
   return (
+    
     <div id="desktopList" style={{flexDirection: 'column'}}>
       {
         impromptu.browsers.map((v, index) => {

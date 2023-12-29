@@ -14,6 +14,7 @@ export class Impromptu {
   // TODO change private
   public browsers: Browser[] = [];
   private socket: Socket;
+  public newDesktopFuncForUI?: (browser: Browser) => void;
 
   constructor() {
     this.socket = io(signalingAddress, socketOption);
@@ -28,7 +29,7 @@ export class Impromptu {
     });
   }
 
-  public listenDesktopRes(callBackUI: (browser: Browser) => void): void {
+  public initialize(): void {
     this.socket.connect();
     this.socket.emit("role", "browser");
     this.socket.on(
@@ -57,7 +58,7 @@ export class Impromptu {
 
           this.browsers.push(clientBrowser);
           // setRes(`${this.browsers.length} ${access.token}`);
-          callBackUI(clientBrowser);
+          if (this.newDesktopFuncForUI) this.newDesktopFuncForUI(clientBrowser);
         }
       },
     );
@@ -80,10 +81,8 @@ export class Impromptu {
   }
 
   public reqDesktopAuth(desktopId: string, password: string): void {
-    if (this.socket.connected) {
-      console.log(`send request auth`);
-      reqAuth(this.socket, { desktopId, password });
-    }
+    reqAuth(this.socket, { desktopId, password });
+    console.log(`send request auth ${this.socket.connected}`);
   }
 
   public async reqShareApp(desktopId: string): Promise<void> {

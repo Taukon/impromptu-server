@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { ScreenChart } from "./screenChart";
 import { impromptu } from ".";
 
-export const AutoMode: React.FC<{setLock: React.Dispatch<React.SetStateAction<boolean>>}> = ({setLock}) => {
+export const AutoMode: React.FC<{setModeLock: React.Dispatch<React.SetStateAction<boolean>>}> = ({setModeLock}) => {
     const passwordRef = useRef<HTMLInputElement>(null);
     const [proxyPassword, setProxyPassword] = useState<string>();
     const [proxy, setProxy] = useState<[string, string, string][]>([]);
@@ -26,17 +26,18 @@ export const AutoMode: React.FC<{setLock: React.Dispatch<React.SetStateAction<bo
             if (!once.current) return;
             once.current = false;
 
+            impromptu.initialize();
             impromptu.autoConnectDesktop(proxyPassword);
         }
       }, [proxyPassword]);
     
     return (
         <>
-            <p>Auto Mode</p>
+            <p>自動接続モード</p>
             <p>Proxy Password: <input ref={passwordRef} defaultValue={"impromptu"} /></p>
             <button onClick={()=>{
                 if(passwordRef.current?.value){
-                    setLock(true);
+                    setModeLock(true);
                     setProxyPassword(passwordRef.current.value);
                 }
             }} disabled={proxyPassword ? true : false}>開始</button>
