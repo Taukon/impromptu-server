@@ -1,27 +1,31 @@
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Impromptu } from "../../proxy";
-import { createRoot } from "react-dom/client";
 import { ManualMode } from "./manualMode";
 import { AutoMode } from "./autoMode";
 
 export const impromptu = new Impromptu();
 
-const RootDiv = () => {
+export const ImpromptuProxy: React.FC<{setLock: React.Dispatch<React.SetStateAction<boolean>>}> = ({setLock}) => {
   const [auto, setAuto] = useState<boolean>(false);
-  const [lock, setLock] = useState<boolean>(false);
+  const [modeLock, setModeLock] = useState<boolean>(false);
   
+  useEffect(() => {
+    if(modeLock){
+      setLock(true);
+    }
+  }, [modeLock]);
+
   return (
       <>
-        <button onClick={()=>{
-          if(lock === false)
-            setAuto(!auto);
-        }} disabled={lock}>Proxy Mode</button>
+        {modeLock ? <></> : 
+        <>
+          <button onClick={()=>{
+              setAuto(!auto);
+          }} disabled={modeLock}>{!auto ? `自動接続` : `手動接続`}</button>
+        </>}
 
-        {auto ? <AutoMode setLock={setLock} /> : <ManualMode setLock={setLock}/>}
+        {auto ? <AutoMode setModeLock={setModeLock} /> : <ManualMode setModeLock={setModeLock}/>}
       </>
   );
 };
-  
-// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-createRoot(document.getElementById("root")!).render(<RootDiv />);

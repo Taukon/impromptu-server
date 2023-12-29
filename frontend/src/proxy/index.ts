@@ -42,7 +42,10 @@ export class Impromptu {
 
   constructor() {
     this.desktopSocket = io(signalingAddress, socketOption);
+    // this.initialize();
+  }
 
+  public initialize() {
     this.desktopSocket.connect();
     this.desktopSocket.emit("role", "browser");
 
