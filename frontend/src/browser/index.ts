@@ -82,7 +82,7 @@ export class Impromptu {
 
   public reqDesktopAuth(desktopId: string, password: string): void {
     reqAuth(this.socket, { desktopId, password });
-    console.log(`send request auth ${this.socket.connected}`);
+    // console.log(`send request auth ${this.socket.connected}`);
   }
 
   public async reqShareApp(desktopId: string): Promise<void> {

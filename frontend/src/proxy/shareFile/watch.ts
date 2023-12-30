@@ -12,6 +12,11 @@ import { timer } from "../util";
 
 const waitTime = 2 * 1000;
 
+export type FileStatistics = {
+  desktopType: string;
+  total: number;
+};
+
 export class WatchFile {
   private rtcConfigurationDesktop: RTCConfiguration;
   private rtcConfigurationBrowser: RTCConfiguration;
@@ -33,6 +38,37 @@ export class WatchFile {
     this.toBrowserSocket = toBrowserSocket;
     this.rtcConfigurationDesktop = rtcConfigurationDesktop;
     this.rtcConfigurationBrowser = rtcConfigurationBrowser;
+  }
+
+  // https://www.w3.org/TR/webrtc-stats/#dom-rtcdatachannelstats-state
+  public async getFileStatistics(): Promise<FileStatistics> {
+    const stats = await this.watchFileConnection?.getStats();
+
+    if (stats) {
+      let remoteCandidateId: string | undefined;
+      let remoteCandidateType: string = "none";
+      stats.forEach((report) => {
+        if (report.type === "candidate-pair" && report.nominated) {
+          remoteCandidateId = report.remoteCandidateId;
+        } else if (
+          report.type === "remote-candidate" &&
+          remoteCandidateId === report.id
+        ) {
+          // console.log(`remote:${remoteCandidateId} | ${JSON.stringify(report)}`);
+          remoteCandidateType = report.candidateType;
+        }
+      });
+
+      return {
+        desktopType: remoteCandidateType,
+        total: Object.values(this.watchFileBrowserChannels).length,
+      };
+    }
+
+    return {
+      desktopType: "none",
+      total: Object.values(this.watchFileBrowserChannels).length,
+    };
   }
 
   // send Offer SDP to Desktop & send Answer SDP to Browser

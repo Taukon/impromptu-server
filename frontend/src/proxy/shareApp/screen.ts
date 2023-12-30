@@ -12,9 +12,15 @@ import { timer } from "../util";
 
 const waitTime = 2 * 1000;
 
-export type ScreenChartData = {
+type ScreenChartData = {
   name: string;
   lostRate: number;
+};
+
+export type ScreenStatistics = {
+  desktopType: string;
+  total: number;
+  data: ScreenChartData[];
 };
 
 export class ScreenApp {
@@ -53,24 +59,45 @@ export class ScreenApp {
     this.rtcConfigurationBrowser = rtcConfigurationBrowser;
   }
 
-  // // https://www.w3.org/TR/webrtc-stats/#dom-rtcdatachannelstats-state
-  private async getScreenDesktopStats(): Promise<number | undefined> {
+  // https://www.w3.org/TR/webrtc-stats/#dom-rtcdatachannelstats-state
+  private async getDesktopStatistics(): Promise<{
+    recv?: number;
+    type: string;
+  }> {
     const stats = await this.screenChannelConnection?.getStats();
+
     if (stats) {
+      let remoteCandidateId: string | undefined;
+      let remoteCandidateType: string = "none";
       let totalRecv = 0;
       stats.forEach((report) => {
         if (report.type === "data-channel" && report.messagesReceived) {
           totalRecv = report.messagesReceived;
+        } else if (report.type === "candidate-pair" && report.nominated) {
+          remoteCandidateId = report.remoteCandidateId;
+        } else if (
+          report.type === "remote-candidate" &&
+          remoteCandidateId === report.id
+        ) {
+          // console.log(`remote:${remoteCandidateId} | ${JSON.stringify(report)}`);
+          remoteCandidateType = report.candidateType;
         }
       });
 
-      return totalRecv > 0 ? totalRecv : undefined;
+      return {
+        recv: totalRecv > 0 ? totalRecv : undefined,
+        type: remoteCandidateType,
+      };
     }
-    return undefined;
+
+    return { type: "none" };
   }
 
-  public async getLostRates(): Promise<ScreenChartData[]> {
-    const totalRecv = await this.getScreenDesktopStats();
+  public async getScreenStatistics(): Promise<ScreenStatistics> {
+    const result = await this.getDesktopStatistics();
+    const totalRecv = result.recv;
+
+    let chartData: ScreenChartData[] = [];
     if (totalRecv) {
       const lostList = Object.entries(this.screenBrowserChannels).map(
         async ([k, v]) => {
@@ -87,10 +114,14 @@ export class ScreenApp {
         },
       );
 
-      return await Promise.all(lostList);
+      chartData = await Promise.all(lostList);
     }
 
-    return [];
+    return {
+      desktopType: result.type,
+      total: chartData.length,
+      data: chartData,
+    };
   }
 
   // send Offer SDP to Desktop & send Answer SDP to Browser
@@ -276,17 +307,17 @@ export class ScreenApp {
 
     screenConnection.ondatachannel = (event: RTCDataChannelEvent) => {
       event.channel.onopen = async () => {
-        const initialRecv = await this.getScreenDesktopStats();
+        const initial = await this.getDesktopStatistics();
         if (
           this.screenChannelConnection?.connectionState === "connected" &&
-          initialRecv
+          initial.recv
         ) {
           this.screenBrowserChannels[browserId]?.channel.close();
           this.screenBrowserChannels[browserId]?.connection.close();
           this.screenBrowserChannels[browserId] = {
             connection: screenConnection,
             channel: event.channel,
-            initialRecv: initialRecv,
+            initialRecv: initial.recv,
           };
         } else {
           event.channel.close();
