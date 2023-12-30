@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { ScreenChart } from "./screenChart";
+import { Statistics } from "./Statistics";
 import { impromptu } from ".";
 
 export const ManualMode: React.FC<{setModeLock: React.Dispatch<React.SetStateAction<boolean>>}> = ({setModeLock}) => {
@@ -39,6 +39,7 @@ export const ManualMode: React.FC<{setModeLock: React.Dispatch<React.SetStateAct
           setInfo([desktopIdRef.current.value, passwordRef.current.value]);
         }
       }}>開始</button>
+      {proxy.length > 0 ? 
       <table border={1}>
         <tr>
             <th>Original ID</th>
@@ -55,13 +56,13 @@ export const ManualMode: React.FC<{setModeLock: React.Dispatch<React.SetStateAct
                 </tr>
                 <tr>
                   <td colSpan={3}>
-                    <ScreenChart replaceId={v[1]} />
+                    <Statistics replaceId={v[1]} />
                   </td>
                 </tr>
               </>
             );
         })}
-      </table>
+      </table> : <></>}
     </>
   );
 };

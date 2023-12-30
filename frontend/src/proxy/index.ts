@@ -1,8 +1,8 @@
 import { Socket, io } from "socket.io-client";
 import { ControlApp } from "./shareApp/control";
-import { ScreenApp, ScreenChartData } from "./shareApp/screen";
+import { ScreenApp, ScreenStatistics } from "./shareApp/screen";
 import { TransferFile } from "./shareFile/transfer";
-import { WatchFile } from "./shareFile/watch";
+import { FileStatistics, WatchFile } from "./shareFile/watch";
 import { signalingAddress, socketOption } from "./config";
 import { Access, AppSDP, FileSDP } from "./signaling/type";
 import {
@@ -24,6 +24,12 @@ type Proxy = {
   controlApp: ControlApp;
   watchFile: WatchFile;
   transferFile: TransferFile;
+};
+
+type Statistics = {
+  exist: boolean;
+  screen: ScreenStatistics;
+  file: FileStatistics;
 };
 
 export class Impromptu {
@@ -81,15 +87,20 @@ export class Impromptu {
     );
   }
 
-  public async getScreenLostRate(
-    replaceId: string,
-  ): Promise<{ exist: boolean; data: ScreenChartData[] }> {
+  public async getStatistics(replaceId: string): Promise<Statistics> {
     const proxy = this.proxies.find((v) => v.replaceId === replaceId);
     if (proxy) {
-      const data = await proxy.screenApp.getLostRates();
-      return { exist: true, data: data };
+      return {
+        exist: true,
+        screen: await proxy.screenApp.getScreenStatistics(),
+        file: await proxy.watchFile.getFileStatistics(),
+      };
     }
-    return { exist: false, data: [] };
+    return {
+      exist: false,
+      screen: { desktopType: "none", total: 0, data: [] },
+      file: { desktopType: "none", total: 0 },
+    };
   }
 
   public autoConnectDesktop(proxyPassword: string) {

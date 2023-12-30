@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { ScreenChart } from "./screenChart";
+import { Statistics } from "./Statistics";
 import { impromptu } from ".";
 
 export const AutoMode: React.FC<{setModeLock: React.Dispatch<React.SetStateAction<boolean>>}> = ({setModeLock}) => {
@@ -54,6 +54,7 @@ export const AutoMode: React.FC<{setModeLock: React.Dispatch<React.SetStateActio
             </table>
             }
             
+            {proxy.length > 0 ?
             <table border={1}>
                 <tr>
                     <th>Original ID</th>
@@ -62,22 +63,21 @@ export const AutoMode: React.FC<{setModeLock: React.Dispatch<React.SetStateActio
                 </tr>
                 {proxy.map( v => {
                     return (
-                      <>
+                    <>
                         <tr>
                             <td>{v[0]} <button onClick={() => navigator.clipboard.writeText(v[0])}>copy</button></td>
                             <td>{v[1]} <button onClick={() => navigator.clipboard.writeText(v[1])}>copy</button></td>
                             <td>{v[2]} <button onClick={() => navigator.clipboard.writeText(v[2])}>copy</button></td>
                         </tr>
                         <tr>
-                          <td colSpan={3}>
-                            <ScreenChart replaceId={v[1]} />
-                          </td>
+                        <td colSpan={3}>
+                            <Statistics replaceId={v[1]} />
+                        </td>
                         </tr>
-                      </>
+                    </>
                     );
                 })}
-            </table>
-            
+            </table> : <></>}
         </>
     );
 };
