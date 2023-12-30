@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Statistics } from "./Statistics";
+import { Statistics } from "./statistics";
 import { impromptu } from ".";
 
 export const ManualMode: React.FC<{setModeLock: React.Dispatch<React.SetStateAction<boolean>>}> = ({setModeLock}) => {
