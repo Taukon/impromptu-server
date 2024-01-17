@@ -17,8 +17,9 @@ export const signalingProxy = (
   socket.on(
     "resProxyAuth",
     async (res: { desktopId: string; status: boolean }) => {
-      const password = userManage.getDesktopUser(res.desktopId)
-        ?.passwordForProxy;
+      const password = userManage.getDesktopUser(
+        res.desktopId,
+      )?.passwordForProxy;
       if (res.status && password) {
         const proxyInfo: ReqProxyInfo = {
           desktopId: res.desktopId,
