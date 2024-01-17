@@ -204,8 +204,33 @@ export class ShareApp {
     });
 
     this.screenTrackConnection.ontrack = (event) => {
-      if (event.track.kind === "audio" && event.streams[0]) {
-        // this.audio.srcObject = new MediaStream([event.track]);
+      if (event.track.kind === "video" && event.streams[0]) {
+        const video = document.createElement("video");
+        video.srcObject = event.streams[0];
+        video.onloadedmetadata = () => video.play();
+
+        const loop = () => {
+          if (
+            this.screenWidth < video.videoWidth &&
+            this.screenHeight < video.videoHeight
+          ) {
+            console.log(
+              `canvas video: ${video.videoWidth} ${video.videoHeight}`,
+            );
+            this.screenWidth = video.videoWidth;
+            this.screenHeight = video.videoHeight;
+            this.canvas.style.width = `${video.videoWidth}px`;
+            this.canvas.style.height = `${video.videoHeight}px`;
+          }
+
+          this.canvas.width = video.videoWidth;
+          this.canvas.height = video.videoHeight;
+
+          this.canvas.getContext("2d")?.drawImage(video, 0, 0);
+          requestAnimationFrame(loop);
+        };
+        requestAnimationFrame(loop);
+      } else if (event.track.kind === "audio" && event.streams[0]) {
         this.audio.srcObject = event.streams[0];
         this.audio.play();
       }

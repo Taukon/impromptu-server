@@ -35,8 +35,9 @@ export const signalingBrowser = (
     if (
       userManage.checkBrowserToken(browserId, access.desktopId, access.token)
     ) {
-      const desktopSocketId = userManage.getDesktopUser(access.desktopId)
-        ?.socketId;
+      const desktopSocketId = userManage.getDesktopUser(
+        access.desktopId,
+      )?.socketId;
       if (desktopSocketId)
         desktopServer
           .to(desktopSocketId)
@@ -51,8 +52,9 @@ export const signalingBrowser = (
     if (
       userManage.checkBrowserToken(browserId, access.desktopId, access.token)
     ) {
-      const desktopSocketId = userManage.getDesktopUser(access.desktopId)
-        ?.socketId;
+      const desktopSocketId = userManage.getDesktopUser(
+        access.desktopId,
+      )?.socketId;
       if (desktopSocketId)
         desktopServer
           .to(desktopSocketId)
