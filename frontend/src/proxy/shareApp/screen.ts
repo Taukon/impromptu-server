@@ -32,6 +32,7 @@ export class ScreenApp {
       connection: RTCPeerConnection;
       channel: RTCDataChannel;
       initialRecv: number;
+      initialSend: number;
     };
   } = {};
   private screenBrowserTracks: { [browserId: string]: RTCPeerConnection } = {};
@@ -68,7 +69,7 @@ export class ScreenApp {
 
     if (stats) {
       let remoteCandidateId: string | undefined;
-      let remoteCandidateType: string = "none";
+      let remoteCandidateType: string = "None";
       let totalRecv = 0;
       stats.forEach((report) => {
         if (report.type === "data-channel" && report.messagesReceived) {
@@ -84,37 +85,72 @@ export class ScreenApp {
         }
       });
 
+      switch (remoteCandidateType) {
+        case "host":
+          remoteCandidateType = "LAN内";
+          break;
+        case "srflx":
+        case "prflx":
+          remoteCandidateType = "ダイレクト";
+          break;
+        case "relay":
+          remoteCandidateType = "リレー";
+          break;
+        default:
+          break;
+      }
+
       return {
         recv: totalRecv > 0 ? totalRecv : undefined,
         type: remoteCandidateType,
       };
     }
 
-    return { type: "none" };
+    return { type: "None" };
   }
 
   public async getScreenStatistics(): Promise<ScreenStatistics> {
     const result = await this.getDesktopStatistics();
     const totalRecv = result.recv;
 
-    let chartData: ScreenChartData[] = [];
+    const chartData: ScreenChartData[] = [];
     if (totalRecv) {
+      const dp = 1000;
+
       const lostList = Object.entries(this.screenBrowserChannels).map(
         async ([k, v]) => {
           const stats = await v.connection.getStats();
-          let totalLost = 0;
+          let totalPerSec = 0;
+          let sendPerSec = 0;
           stats.forEach((report) => {
             if (report.type === "data-channel" && report.messagesSent) {
-              totalLost = totalRecv - v.initialRecv - report.messagesSent;
+              totalPerSec = totalRecv - v.initialRecv;
+              sendPerSec = report.messagesSent - v.initialSend;
             }
           });
-          const dp = 1000;
-          const lostRate = Math.floor((totalLost / totalRecv) * 100 * dp) / dp;
+
+          v.initialRecv += totalPerSec;
+          v.initialSend += sendPerSec;
+          const lostPerSec = totalPerSec - sendPerSec;
+          const lostRate =
+            Math.floor((lostPerSec / totalPerSec) * 100 * dp) / dp;
           return { name: k, lostRate: lostRate };
         },
       );
 
-      chartData = await Promise.all(lostList);
+      const channelCharts = await Promise.all(lostList);
+      if (channelCharts.length > 0) {
+        let sum = 0;
+        for (const i of channelCharts) {
+          sum += i.lostRate;
+        }
+
+        chartData.push({
+          name: `total`,
+          lostRate: Math.floor((sum / channelCharts.length) * dp) / dp,
+        });
+        chartData.push(...channelCharts);
+      }
     }
 
     return {
@@ -318,6 +354,7 @@ export class ScreenApp {
             connection: screenConnection,
             channel: event.channel,
             initialRecv: initial.recv,
+            initialSend: 0,
           };
         } else {
           event.channel.close();

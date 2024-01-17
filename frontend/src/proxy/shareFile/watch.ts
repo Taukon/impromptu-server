@@ -46,7 +46,7 @@ export class WatchFile {
 
     if (stats) {
       let remoteCandidateId: string | undefined;
-      let remoteCandidateType: string = "none";
+      let remoteCandidateType: string = "None";
       stats.forEach((report) => {
         if (report.type === "candidate-pair" && report.nominated) {
           remoteCandidateId = report.remoteCandidateId;
@@ -59,6 +59,21 @@ export class WatchFile {
         }
       });
 
+      switch (remoteCandidateType) {
+        case "host":
+          remoteCandidateType = "LAN内";
+          break;
+        case "srflx":
+        case "prflx":
+          remoteCandidateType = "ダイレクト";
+          break;
+        case "relay":
+          remoteCandidateType = "リレー";
+          break;
+        default:
+          break;
+      }
+
       return {
         desktopType: remoteCandidateType,
         total: Object.values(this.watchFileBrowserChannels).length,
@@ -66,7 +81,7 @@ export class WatchFile {
     }
 
     return {
-      desktopType: "none",
+      desktopType: "None",
       total: Object.values(this.watchFileBrowserChannels).length,
     };
   }
