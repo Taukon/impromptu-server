@@ -43,7 +43,7 @@ const httpsServer = https.createServer(options, app);
 const socketServer = new Server(httpsServer);
 
 httpsServer.listen(clientPort, () => {
-  console.log(`https://${ip_addr}:${clientPort}/impromptu.html`);
+  console.log(`https://${ip_addr}:${clientPort}`);
 });
 
 const start = async () => {

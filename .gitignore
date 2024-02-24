@@ -1,5 +1,4 @@
-public/browser*
-public/proxy*
+public/*
 ssl/cert.pem
 ssl/key.pem
 tsconfig.json

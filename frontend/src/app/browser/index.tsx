@@ -24,16 +24,17 @@ export const ImpromptuBrowser: React.FC<{setLock: React.Dispatch<React.SetStateA
   return (
     <>
       <div id="setOption">
-        <p>
-          <div>Desktop ID: <input ref={desktopIdRef}/></div>
-          <div>Password: <input ref={passwordRef} defaultValue={"impromptu"} /></div>
-          <button onClick={()=>{
+        {/* <p> */}
+          <div className="collapse-title text-xl font-medium">Desktop ID: <input className="input input-bordered input-success input-sm w-full max-w-xs text-xl" ref={desktopIdRef}/></div>
+          <div className="collapse-title text-xl font-medium">Password: <input className="input input-bordered input-success input-sm w-full max-w-xs text-xl" ref={passwordRef} defaultValue={"impromptu"} /></div>
+          <button className="btn btn-outline text-base btn-primary" onClick={()=>{
             if(desktopIdRef.current?.value && passwordRef.current?.value){
               setInfo([desktopIdRef.current.value, passwordRef.current.value]);
             }
           }}>開始</button>
-        </p>
+        {/* </p> */}
       </div>
+      <div className="divider divider-primary"></div>
       <AccessDesktop />
     </>
   );

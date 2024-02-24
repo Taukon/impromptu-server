@@ -3,7 +3,7 @@ module.exports = {
         es2020: true,
         browser: true
     },
-    ignorePatterns: ["webpack.config.js", ".eslintrc.js"],
+    ignorePatterns: ["webpack.config.js", ".eslintrc.js", "postcss.config.js", "tailwind.config.js"],
     extends: [
         'plugin:react/recommended',
         "eslint:recommended",

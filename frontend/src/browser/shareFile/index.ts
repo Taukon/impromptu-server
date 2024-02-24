@@ -46,15 +46,19 @@ export class ShareFile {
 
     const fileInput = document.createElement("input");
     fileInput.type = "file";
+    fileInput.className =
+      "file-input file-input-bordered file-input-info file-input-sm w-full max-w-xs";
     // input.name = 'files[]'; // 複数ファイル対応のために[]を追加
     const uploadButton = document.createElement("button");
     uploadButton.textContent = "send";
+    uploadButton.className = "btn btn-sm btn-outline text-base btn-info";
 
     this.fileUpload = {
       input: fileInput,
       button: uploadButton,
     };
     this.fileDownload = document.createElement("div");
+    this.fileDownload.className = "join-vertical";
   }
 
   public isChannelOpen(): boolean {

@@ -19,11 +19,11 @@ export const ImpromptuProxy: React.FC<{setLock: React.Dispatch<React.SetStateAct
   return (
       <>
         {modeLock ? <></> : 
-        <>
-          <button onClick={()=>{
+        <div className="navbar text-neutral-content">
+          <button className="btn btn-outline text-base btn-info" onClick={()=>{
               setAuto(!auto);
           }} disabled={modeLock}>{!auto ? `自動接続` : `手動接続`}</button>
-        </>}
+        </div>}
 
         {auto ? <AutoMode setModeLock={setModeLock} /> : <ManualMode setModeLock={setModeLock}/>}
       </>
