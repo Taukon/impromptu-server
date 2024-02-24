@@ -48,6 +48,7 @@ const addFiles = (
   for (const item of msgItems) {
     const button = document.createElement("button");
     button.textContent = button.id = button.name = item;
+    button.className = "join-item btn";
     button.addEventListener("click", async () => {
       await recvFileFunc(item);
     });
@@ -60,6 +61,7 @@ const writingFiles = (fileDownload: FileDownload, msgItems: string[]) => {
   for (const item of msgItems) {
     const button = document.createElement("button");
     button.textContent = button.id = button.name = item;
+    button.className = "join-item btn";
     button.disabled = true;
 
     fileDownload.appendChild(button);

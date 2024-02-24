@@ -20,10 +20,11 @@ export const AccessDesktop: React.FC = () => {
       {
         impromptu.browsers.map((v, index) => {
           return (
-            <div key={index}>
-              <div key={index}>Desktop ID: {v.access.desktopId}</div>
+            <div className="join-vertical" key={index}>
+              <div className="collapse-title text-xl font-medium" key={index}>Desktop ID: {v.access.desktopId}</div>
+              <div className="divider"></div>
               <p>
-                <button ref={
+                <button className="btn btn-outline text-base btn-primary" ref={
                   c => {
                     if(c){
                       c.disabled = impromptu.isOpenShareFile(v.access.desktopId);
@@ -51,7 +52,7 @@ export const AccessDesktop: React.FC = () => {
                 }>
                   File
                 </button>
-                <div ref={c => {
+                <div className="join-vertical" ref={c => {
                   while(c?.firstChild){
                     c.removeChild(c.firstChild);
                   }
@@ -61,9 +62,8 @@ export const AccessDesktop: React.FC = () => {
                     c?.appendChild(v.shareFile.fileUpload.button);
                   }
                 }}></div>
-              </p>
-              <p>
-                <button ref={
+                <div className="divider"></div>
+                <button className="btn btn-outline text-base btn-primary" ref={
                   c => {
                     if(c){
                       c.disabled = impromptu.isOpenShareApp(v.access.desktopId);
@@ -99,6 +99,7 @@ export const AccessDesktop: React.FC = () => {
                     c?.append(v.shareApp.canvas);
                 }}></div>
               </p>
+              <div className="divider divider-info"></div>
             </div>
           )
         })
