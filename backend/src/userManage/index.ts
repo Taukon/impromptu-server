@@ -16,6 +16,12 @@ export class UserManage {
   private browserUser: BrowserUserList = {};
   private proxyUser: ProxyUserList = {};
 
+  public showUsers(msg?: string) {
+    console.log(
+      `B: ${Object.entries(this.browserUser).length} | D: ${Object.entries(this.desktopUser).length} | P: ${Object.entries(this.proxyUser).length} | ${msg}`,
+    );
+  }
+
   public addProxyUser(socketId: string): ProxyId {
     const proxyId = socketId;
     this.proxyUser[proxyId] = { socketId: socketId };

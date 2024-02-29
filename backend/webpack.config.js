@@ -9,7 +9,8 @@ module.exports = {
   externals: [nodeExternals()],
 
   entry: {
-    app: path.join(__dirname, 'src', 'app', 'index.ts')
+    https: path.join(__dirname, 'src', 'app', 'https.ts'),
+    http: path.join(__dirname, 'src', 'app', 'http.ts')
   },
 
   output: {
@@ -24,22 +25,12 @@ module.exports = {
         use: [
           {
             loader: 'ts-loader'
-            //   options: {
-            //     transpileOnly: true,
-            //   },
           }
         ]
       }
     ]
   },
-  //   externals: {
-  //     bufferutil: "bufferutil",
-  //     "utf-8-validate": "utf-8-validate",
-  //   },
   resolve: {
     extensions: ['.ts', '.js']
   }
-//   optimization: {
-//     minimize: false, // enabling this reduces file size and readability
-//   },
 }
