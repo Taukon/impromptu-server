@@ -8,7 +8,8 @@
   },
   "scripts": {
     "build": "webpack --progress",
-    "start": "node dist/app.js",
+    "start:https": "node dist/https.js",
+    "start:http": "node dist/http.js",
     "lint": "eslint --fix src && prettier --write 'src/**/*.ts'",
     "lint:ci": "eslint src && prettier --check 'src/**/*.ts'"
   },

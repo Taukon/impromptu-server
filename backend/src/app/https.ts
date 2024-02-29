@@ -51,7 +51,6 @@ const start = async () => {
 
   socketServer.on("connection", (socket) => {
     socket.once("role", (role: string) => {
-      console.log(`${role}: ${socket.id}`);
       if (role === "browser") {
         signalingBrowser(socketServer, socket, userTable);
       } else if (role === "desktop") {
@@ -59,6 +58,10 @@ const start = async () => {
       } else if (role === "proxy") {
         signalingProxy(socket, userTable);
       }
+      userTable.showUsers(`connect ${role}: ${socket.id}`);
+      socket.on("disconnect", () => {
+        userTable.showUsers(`disconnect ${role}: ${socket.id}`);
+      });
     });
   });
 };
