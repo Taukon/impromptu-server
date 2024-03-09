@@ -1,4 +1,4 @@
 public/*
 ssl/cert.pem
 ssl/key.pem
-tsconfig.json
+./tsconfig.json
