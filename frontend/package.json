@@ -8,8 +8,8 @@
   },
   "scripts": {
     "build": "webpack --progress",
-    "lint": "eslint --fix src && prettier --write 'src/**/*.ts'",
-    "lint:ci": "eslint --fix src && prettier --check 'src/**/*.ts'"
+    "lint": "eslint --fix --ext .ts,.tsx src && prettier --write 'src/**/*.{ts,tsx}'",
+    "lint:ci": "eslint --fix --ext .ts,.tsx src && prettier --check 'src/**/*.{ts,tsx}'"
   },
   "keywords": [],
   "author": "",
