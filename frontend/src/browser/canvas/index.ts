@@ -10,6 +10,13 @@ export const controlEventListener = (
   canvas.addEventListener(
     "mousedown",
     (event) => {
+      if (!shareApp.getControlAccept()) {
+        // console.log(`mousedown: ${JSON.stringify(event.button)}`);
+        // const pos = getPos(canvas, event);
+        // console.log(`pos : x=${Math.round(pos.x)}, y=${Math.round(pos.y)}`);
+        return;
+      }
+
       const button: ButtonJson = { button: { buttonMask: 0x1, down: true } };
       if (event.button === 1) {
         // middle click
@@ -22,13 +29,17 @@ export const controlEventListener = (
         dataChannel.send(
           createAppProtocolFromJson(JSON.stringify(button), appStatus.control),
         );
-      // console.log("mousedown: " + JSON.stringify(event.button));
     },
     false,
   );
   canvas.addEventListener(
     "mouseup",
     (event) => {
+      if (!shareApp.getControlAccept()) {
+        // console.log(`mouseup: ${JSON.stringify(event.button)}`);
+        return;
+      }
+
       const button: ButtonJson = { button: { buttonMask: 0x1, down: false } };
       if (event.button === 1) {
         // middle click
@@ -41,13 +52,18 @@ export const controlEventListener = (
         dataChannel.send(
           createAppProtocolFromJson(JSON.stringify(button), appStatus.control),
         );
-      // console.log("mouseup: " + JSON.stringify(event.button));
     },
     false,
   );
   canvas.addEventListener(
     "mousemove",
     (event) => {
+      if (!shareApp.getControlAccept()) {
+        // const pos = getPos(canvas, event);
+        // console.log(`pos : x=${Math.round(pos.x)}, y=${Math.round(pos.y)}`);
+        return;
+      }
+
       const pos = getPos(canvas, event);
       const motion: MotionJson = {
         move: {
@@ -61,7 +77,6 @@ export const controlEventListener = (
         dataChannel.send(
           createAppProtocolFromJson(JSON.stringify(motion), appStatus.control),
         );
-      //console.log("mousemove : x=" + pos.x + ", y=" + pos.y);
     },
     false,
   );
@@ -69,6 +84,11 @@ export const controlEventListener = (
   canvas.addEventListener(
     "contextmenu",
     (event) => {
+      if (!shareApp.getControlAccept()) {
+        // console.log(`contextmenu: ${JSON.stringify(event)}`);
+        return;
+      }
+
       event.preventDefault();
       const buttonDown: ButtonJson = {
         button: { buttonMask: 0x4, down: true },
@@ -87,7 +107,6 @@ export const controlEventListener = (
             appStatus.control,
           ),
         );
-        //console.log(JSON.stringify(event));
       }
     },
     false,
@@ -96,6 +115,10 @@ export const controlEventListener = (
   canvas.addEventListener(
     "keydown",
     (event) => {
+      if (!shareApp.getControlAccept()) {
+        return;
+      }
+
       event.preventDefault();
       const keyJson = createKeyJson(event, true);
       if (keyJson && dataChannel.bufferedAmount == 0) {
@@ -129,6 +152,10 @@ export const controlEventListener = (
   canvas.addEventListener(
     "keyup",
     (event) => {
+      if (!shareApp.getControlAccept()) {
+        return;
+      }
+
       event.preventDefault();
       const keyJson = createKeyJson(event, false);
       if (keyJson && dataChannel.bufferedAmount == 0) {
@@ -150,6 +177,10 @@ export const controlEventListener = (
   canvas.addEventListener(
     "wheel",
     (event) => {
+      if (!shareApp.getControlAccept()) {
+        return;
+      }
+
       event.preventDefault();
       if (event.deltaY / 100 > 0 && dataChannel.bufferedAmount == 0) {
         const button: ButtonJson = { button: { buttonMask: 0x10, down: true } };

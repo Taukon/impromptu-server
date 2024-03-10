@@ -33,6 +33,14 @@ export class ShareApp {
   public screenWidth: number = 0;
   public screenHeight: number = 0;
 
+  private controlAccept = true;
+  public getControlAccept = () => {
+    return this.controlAccept;
+  };
+  public setControlAccept = (accept: boolean) => {
+    this.controlAccept = accept;
+  };
+
   // screen
   private preId = 0;
   private order = 0;
